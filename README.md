@@ -6,9 +6,9 @@ Aqui está reunido os arquivos do projeto de controle e monitoramento de nível 
 
 
 # Lista de funções implementadas:
--Aplicativo mobile para verificar a leitura dos dados;
--On/Off do Sistema via mobile ou web;
--Medição de nível dos reservatórios;
--Medição do volume dos reservatórios;
--Registro de data e hora das leituras;
+- Aplicativo mobile para verificar a leitura dos dados;
+- On/Off do Sistema via mobile ou web;
+- Medição de nível dos reservatórios;
+- Medição do volume dos reservatórios;
+- Registro de data e hora das leituras;
 
