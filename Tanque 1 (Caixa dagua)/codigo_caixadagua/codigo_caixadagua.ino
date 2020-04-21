@@ -9,8 +9,8 @@
 #define FIREBASE_AUTH "aQxXYLGyDzSobw2QDiw4xXB8p10UNPA8sTSKuQn1"
 
 //Wi-Fi settings
-#define WIFI_SSID "UFRN"                                          // home or public wifi name 
-#define WIFI_PASSWORD ""                                          // wifi password
+#define WIFI_SSID "William_2.4GHZ"                                          // home or public wifi name 
+#define WIFI_PASSWORD "camaleao"                                          // wifi password
 
 //Define os pinos para o trigger e echo
 #define trigPin D1
