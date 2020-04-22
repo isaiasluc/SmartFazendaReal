@@ -160,7 +160,7 @@ void setup() {
 
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);                                       // conexão com o firebase
 
-  Firebase.setString("Status do Sistema", "0");                                            // inicializa o sistema desligado
+  Firebase.setString("Status do Sistema", "false");                                            // inicializa o sistema desligado
   
   // Registra o ticker para publicar de tempos em tempos
   ticker.attach_ms(PUBLISH_INTERVAL, publish);
@@ -175,7 +175,7 @@ void loop() {
   //system_power=Firebase.getInt("Status do Sistema");
   system_power=Firebase.getString("Status do Sistema");
   
-  if (system_power=="1") {
+  if (system_power=="true") {
     altura_poco=distancia(); // Realiza a leitura da distancia
     tank2_volume=(((3.1415*(32-altura_poco))*((R*R)+(R*r)+(r*r)))/3)/1000;
     fireStatus = Firebase.getString("Nivel do tanque 1");
@@ -207,7 +207,7 @@ void loop() {
     root["4- Data"] = dataAtual();
     root["5- Hora"] = horaAtual();
     Firebase.push(TABLE_NAME, root);
-  } else if (system_power=="0") {
+  } else if (system_power=="false") {
     Serial.println("Sistema desligado");
   }
   delay(10000);

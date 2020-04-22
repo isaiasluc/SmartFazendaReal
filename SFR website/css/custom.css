@@ -3,12 +3,13 @@ header, main, footer {
   }
 
 .bg{
-	background-image: linear-gradient(to top left,#8a4592,#35b0a9);
+	background-image: linear-gradient(to top left,#539ADC,#F6F2F9);
 }
 nav{
-	background-image: linear-gradient(to top right,#35b0a9,#8a4592); 
+	background-image: linear-gradient(to top right,#539ADC,#F6F2F9); 
 	padding-left: 300px;
 }
+
 .content{
 	padding-left: 300px;
 	height:100%;
