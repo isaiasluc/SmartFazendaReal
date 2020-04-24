@@ -13,8 +13,8 @@
 #define WIFI_PASSWORD "camaleao"                                          // wifi password
 
 //Define os pinos para o trigger e echo
-#define trigPin D1
-#define echoPin D2
+#define trigPin D0
+#define echoPin D1
 
 #define TABLE_NAME "Dados tanque 1 (Caixa d'agua)"
 
@@ -154,7 +154,7 @@ void setup() {
  
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);                                       // conexão com o firebase
   
-  Firebase.setString("Status do Sistema", "false");                                            // inicializa o sistema desligado
+  Firebase.setString("Status do Sistema", "Desligado");                                            // inicializa o sistema desligado
      
   // Registra o ticker para publicar de tempos em tempos
   ticker.attach_ms(PUBLISH_INTERVAL, publish);
@@ -171,7 +171,7 @@ void loop() {
   //system_power=Firebase.getInt("Status do Sistema");
     system_power=Firebase.getString("Status do Sistema");
   
-  if (system_power=="true") {
+  if (system_power=="Ligado") {
     alt1=distancia();
     delay(1000);
     alt2=distancia();
@@ -225,7 +225,7 @@ void loop() {
   Serial.println(horaAtual());
   delay(10000); // realiza nova leitura a cada 10 segundos
   
-  } else if (system_power=="false") {
+  } else if (system_power=="Desligado") {
     Serial.println("Sistema desligado");
   }
 }
