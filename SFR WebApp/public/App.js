@@ -24,6 +24,7 @@
     const statusT2 = document.getElementById("statusT2");
     const volT1 = document.getElementById("volT1");
     const volT2 = document.getElementById("volT2");
+    const tempBomba = document.getElementById("tempBomba");
 
     const dbRef2 = firebase.database().ref().child("Nivel do tanque 1");
     dbRef2.on('value', snap => statusT1.innerText = snap.val());
@@ -32,6 +33,9 @@
     const volT2ref = firebase.database().ref().child("Volume do tanque 2");
     volT1ref.on('value', snap => volT1.innerText = snap.val() + "m3");
     volT2ref.on('value', snap => volT2.innerText = snap.val() + "m3");
+
+    const tempBombaRef = firebase.database().ref().child("Temperatura da Bomba");
+    tempBombaRef.on('value', snap => tempBomba.innerText = snap.val() + "ºC");
 
     const dbRef = firebase.database().ref().child("Status do Sistema");
     dbRef.on('value', snap => statusSist.innerText = snap.val());
