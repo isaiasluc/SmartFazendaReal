@@ -7,6 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-database.js"></script>
+    
     <style>
       body{
         background-color: #E0E0E0;
@@ -19,7 +23,7 @@
 
       nav {
         background: rgb(0,204,245);
-background: linear-gradient(90deg, rgba(0,204,245,1) 0%, rgba(44,44,212,1) 100%);
+        background: linear-gradient(90deg, rgba(0,204,245,1) 0%, rgba(44,44,212,1) 100%);
         
       }
 
@@ -138,16 +142,27 @@ background: linear-gradient(90deg, rgba(0,204,245,1) 0%, rgba(44,44,212,1) 100%)
           <!-- FIM DOS CARDS DE VOLUME-->
         </div>
       </div>
+      <div class="containter content">
+        <div class="row">
+                 
+          <div class="card-image center">
+            <span id="currentSist" class="statistic">-</span>
+          </div>
+          <canvas id="sistLineChart"></canvas>
+          
+        </div>
+      </div>
     </div>
+        
   </body>
 
+  
 
 
 
 
 
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/js/materialize.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
