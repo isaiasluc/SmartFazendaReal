@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.min.css">
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-database.js"></script>
     
@@ -106,7 +106,7 @@
             <div class="card-content">
               <span class="card-title">Nível do Tanque 1</span>
               <div class="card-image center">
-                <h1 id="statusT1"></h1>
+                <h1 id="nivelT1"></h1>
               </div>
             </div>
           </div>
@@ -114,7 +114,7 @@
             <div class="card-content">
               <span class="card-title">Nível do Tanque 2</span>
               <div class="card-image center">
-                <h1 id="statusT2"></h1>
+                <h1 id="nivelT2"></h1>
               </div>
             </div>
           </div>
@@ -144,11 +144,8 @@
       </div>
       <div class="containter content">
         <div class="row">
-                 
-          <div class="card-image center">
-            <span id="currentSist" class="statistic">-</span>
-          </div>
-          <canvas id="sistLineChart"></canvas>
+          
+          
           
         </div>
       </div>
@@ -162,7 +159,7 @@
 
 
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
+  
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/js/materialize.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
