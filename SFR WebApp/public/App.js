@@ -17,6 +17,8 @@
        
     var refTanque1 = db.ref("Dados tanque 1 (Caixa d'agua)");
     
+    var dadosGlobais = [];
+    var timeGlobal = [];
 
    
     refTanque1.on('child_added', function(childSnapshot, prevChildKey) {
@@ -24,13 +26,32 @@
       //var keys = Object.values(key);
       //valornivelT1 = key['2- Nivel do tanque'];
       valorvolT1 = key['3- Volume do tanque'];
-      dataArr = [];
-      dataArr.push(valorvolT1);
+      valortime = key['5- Hora'];
+      dadosGlobais.push(valorvolT1);
+      timeGlobal.push(valortime);
       
-      console.log(dataArr);
     });
-
     
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: timeGlobal,
+        label: 'Hora',
+        datasets: [{
+            label: 'Volume do tanque 1 [m3]',
+            backgroundColor: 'transparent',
+            borderColor: 'rgb(255, 99, 132)',
+            data: dadosGlobais
+        }]
+    },
+
+    // Configuration options go here
+    options: {}
+});
     
     
 
