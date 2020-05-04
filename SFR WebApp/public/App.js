@@ -27,12 +27,17 @@
       //valornivelT1 = key['2- Nivel do tanque'];
       valorvolT1 = key['3- Volume do tanque'];
       valortime = key['5- Hora'];
+      if (dadosGlobais.length < 20) {
       dadosGlobais.push(valorvolT1);
       timeGlobal.push(valortime);
+      } else {
+        dadosGlobais.shift();
+        timeGlobal.shift();
+      }
       
     });
     
-    var ctx = document.getElementById('myChart').getContext('2d');
+    var ctx = document.getElementById('volChart').getContext('2d');
     var chart = new Chart(ctx, {
     // The type of chart we want to create
     type: 'line',
