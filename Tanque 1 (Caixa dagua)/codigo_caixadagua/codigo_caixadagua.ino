@@ -2,6 +2,13 @@
 #include <ESP8266WiFi.h>
 #include <FirebaseArduino.h>                                              // firebase library
 #include <Ticker.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org");
+
+
 
 
 //Firebase settings
@@ -130,6 +137,7 @@ int agora = (hr*100)+ minuto; //
 return agora;
 }
 
+
 void setup() {
   // Iniciando a comunicação serial
   Serial.begin(115200);
@@ -151,6 +159,11 @@ void setup() {
   Serial.println(WiFi.localIP());
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   WiFi.mode(WIFI_STA);
+
+  timeClient.setTimeOffset(0);
+  timeClient.begin();
+  
+  
  
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);                                       // conexão com o firebase
   
@@ -161,9 +174,14 @@ void setup() {
 }
 
 void loop() {
+  timeClient.update();
+  unsigned long epochTime = timeClient.getEpochTime();
+    
+  
+  String formattedTime = timeClient.getFormattedTime();
   float alt1, alt2, alt3, alt4, alt5, altura, tank1_volume, R=14.5, r=13;
   String tank_level, system_power;
-
+  
 
   
   //LIGANDO SISTEMA
@@ -194,6 +212,7 @@ void loop() {
         Firebase.setString("Nivel do tanque 1", "LOW");
         Firebase.setFloat("Distancia em cm do tanque 1", altura);
         Firebase.setFloat("Volume do tanque 1", tank1_volume);
+        Firebase.setString("Hora", formattedTime);
         //status_bomba = "ON";
       } else if (altura < 25) {
         Serial.println("Nivel do tanque 1: FULL");
@@ -201,14 +220,18 @@ void loop() {
         Firebase.setString("Nivel do tanque 1", "FULL");
         Firebase.setFloat("Distancia em cm do tanque 1", altura);
         Firebase.setFloat("Volume do tanque 1", tank1_volume);
+        Firebase.setString("Hora", formattedTime);
         //status_bomba = "OFF";
       }
     publishNewState = false;
+    
+    
     root["1- Distancia em cm"] = altura;
     root["2- Nivel do tanque"] = tank_level;
     root["3- Volume do tanque"] = tank1_volume;
     root["4- Data"] = dataAtual();
-    root["5- Hora"] = horaAtual();
+    root["5- Hora"] = epochTime;
+     
     Firebase.push(TABLE_NAME, root);
     } else {
       Serial.println("Error Publishing");
@@ -223,6 +246,8 @@ void loop() {
   Serial.println(dataAtual());
   Serial.println("Hora:");
   Serial.println(horaAtual());
+  Serial.print("Formatted Time: ");
+  Serial.println(formattedTime);
   delay(10000); // realiza nova leitura a cada 10 segundos
   
   } else if (system_power=="Desligado") {

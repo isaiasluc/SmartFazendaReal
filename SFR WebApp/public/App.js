@@ -14,22 +14,28 @@
     firebase.initializeApp(config);
 
     db = firebase.database();
-       
-    var refTanque1 = db.ref("Dados tanque 1 (Caixa d'agua)");
-    
+  
     var dadosGlobais = [];
     var timeGlobal = [];
-
-   
+    var refTanque1 = db.ref("Dados tanque 1 (Caixa d'agua)");
+  
+  
     refTanque1.on('child_added', function(childSnapshot, prevChildKey) {
       let key = childSnapshot.val();
       //var keys = Object.values(key);
       //valornivelT1 = key['2- Nivel do tanque'];
       valorvolT1 = key['3- Volume do tanque'];
       valortime = key['5- Hora'];
+      function dataFormatada (valortime) {
+        var date = new Date(valortime*1000);
+        var localeSpecificTime = date.toLocaleTimeString();
+        return localeSpecificTime.replace(/:\d+ /, ' ');
+      }
+      dateFormatted = dataFormatada(valortime);
+      console.log(dateFormatted);
       if (dadosGlobais.length < 20) {
       dadosGlobais.push(valorvolT1);
-      timeGlobal.push(valortime);
+      timeGlobal.push(dateFormatted);
       } else {
         dadosGlobais.shift();
         timeGlobal.shift();
