@@ -6,7 +6,7 @@
 #include <WiFiUdp.h>
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "pool.ntp.org");
+NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 
 
 
