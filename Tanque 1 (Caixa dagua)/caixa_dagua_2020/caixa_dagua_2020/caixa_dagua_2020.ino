@@ -6,7 +6,7 @@
 
 //Iniciando uma instância do NTP
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "pool.ntp.org");
+NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 
 //Configuraçõs do Firebase
 #define FIREBASE_HOST "smart-fazenda-real.firebaseio.com"
@@ -35,6 +35,7 @@ bool publishNewState = true;
 void publish(){
   publishNewState = true;
 }
+#define PUBLISH_INTERVAL 1000*60*0.166
 // -------------------------------
 
 // ------------------------------
@@ -70,14 +71,17 @@ void setup() {
   pinMode(echoPin, INPUT); //Seta o echoPin como Input (entrada)
   //Iniciando conexão WiFi
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("Conectando com " + WIFI_SSID);
+  Serial.print("Conectando com ");
+  Serial.println(WIFI_SSID);
     while (WiFi.status() != WL_CONNECTED) {
       Serial.print(".");
       delay(500);
     }
   Serial.println();
-  Serial.println("Conectado a " + WIFI_SSID);
-  Serial.println("Endereço IP: " + WiFi.localIP());
+  Serial.print("Conectado a ");
+  Serial.println(WIFI_SSID);
+  Serial.print("Endereço IP: ");
+  Serial.println(WiFi.localIP());
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   WiFi.mode(WIFI_STA);
 
@@ -118,7 +122,7 @@ void loop() {
     alt5=distancia();
     delay(1000);
     alturamedia=(alt1+alt2+alt3+alt4+alt5)/5;
-    tank1_vol=(((3.1415*(h-alturamedia))*((R*R)+(R*r)+(r*r))/3)/1000;
+    tank1_vol=(((3.1415*(h-alturamedia))*((R*R)+(R*r)+(r*r))/3)/1000);
     // Apenas publique quando passar o tempo determinado
     if(publishNewState){
       Serial.println("Publicando novo estado");
@@ -136,16 +140,20 @@ void loop() {
       root["tank1_level"] = tank1_level;
       root["tank1_vol"] = tank1_vol;
       root["time"] = epochTime;
+      root["system_power"] = system_power;
 
       Firebase.push(TABLE_NAME, root);
       } else {
         Serial.println("Erro ao publicar estado");
       }
     //Exibindo informações no Serial Monitor do Arduino IDE
-    Serial.println("Distancia em cm: " + alturamedia + "cm");
-    Serial.println("Hora: " + formattedTime);
+    Serial.print("Distancia em cm: ");
+    Serial.println(alturamedia);
+    Serial.print("Hora: ");
+    Serial.println(formattedTime);
     delay(10000);
   } else if (system_power=="Desligado") {
     Serial.println("Sistema desligado");
+    delay(2000);
   }
 }
