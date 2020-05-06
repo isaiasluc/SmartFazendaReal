@@ -122,6 +122,7 @@ void loop() {
     delay(1000);
     alturamedia_caixa=(alt1+alt2+alt3+alt4+alt5)/5;
     tank1_vol=(((3.1415*(h-alturamedia_caixa))*((R*R)+(R*r)+(r*r))/3)/1000);
+    
     // Apenas publique quando passar o tempo determinado
     if(publishNewState){
       Serial.println("Publicando novo estado");
