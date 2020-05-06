@@ -89,8 +89,7 @@ void setup() {
   timeClient.begin(); //Inicia o NTP Client
 
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH); //Inicia uma instância do Firebase
-
-  Firebase.setString("Status do Sistema", "Desligado"); //Seta o estado inicial do sistema para Desligado
+  Firebase.setString("system_power", "Desligado"); //Seta o estado inicial do sistema para Desligado
 
   //Registrando o Ticker para publicar de tempos em tempos
   ticker.attach_ms(PUBLISH_INTERVAL, publish);
@@ -101,14 +100,14 @@ void loop() {
   unsigned long epochTime = timeClient.getEpochTime(); //Retorna o timestamp
   String formattedTime = timeClient.getFormattedTime();
   
-  float alt1, alt2, alt3, alt4, alt5, alturamedia, tank1_vol;
+  float alt1, alt2, alt3, alt4, alt5, alturamedia_caixa, tank1_vol;
   String tank1_level, system_power;
   
   //Dimensões do reservatório em cm
   float R=14.5, r=13, h=32;
 
   //LIGANDO O SISTEMA
-  system_power=Firebase.getString("Status do Sistema");
+  system_power=Firebase.getString("system_power");
 
   if (system_power=="Ligado") {
     alt1=distancia();
@@ -121,13 +120,13 @@ void loop() {
     delay(1000);
     alt5=distancia();
     delay(1000);
-    alturamedia=(alt1+alt2+alt3+alt4+alt5)/5;
-    tank1_vol=(((3.1415*(h-alturamedia))*((R*R)+(R*r)+(r*r))/3)/1000);
+    alturamedia_caixa=(alt1+alt2+alt3+alt4+alt5)/5;
+    tank1_vol=(((3.1415*(h-alturamedia_caixa))*((R*R)+(R*r)+(r*r))/3)/1000);
     // Apenas publique quando passar o tempo determinado
     if(publishNewState){
       Serial.println("Publicando novo estado");
       //Mandando os dados coletados para o Firebase
-      if (alturamedia > 25) {
+      if (alturamedia_caixa > 25) {
         Serial.println("Nivel do tanque 1: LOW");
         tank1_level = "LOW";
       } else {
@@ -136,19 +135,21 @@ void loop() {
       }
       publishNewState = false;
 
-      root["alturamedia"] = alturamedia;
+      root["alturamedia_caixa"] = alturamedia_caixa;
       root["tank1_level"] = tank1_level;
       root["tank1_vol"] = tank1_vol;
       root["time"] = epochTime;
       root["system_power"] = system_power;
 
+      Firebase.setString("tank1_level", tank1_level);
       Firebase.push(TABLE_NAME, root);
+      
       } else {
         Serial.println("Erro ao publicar estado");
       }
     //Exibindo informações no Serial Monitor do Arduino IDE
     Serial.print("Distancia em cm: ");
-    Serial.println(alturamedia);
+    Serial.println(alturamedia_caixa);
     Serial.print("Hora: ");
     Serial.println(formattedTime);
     delay(10000);
