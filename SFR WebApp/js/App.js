@@ -1,5 +1,3 @@
-(function(){
-    
     // Inicia o firebase Firebase
     var config = {
         apiKey: "AIzaSyCKfz5qjYidlClPlXCf_X73YXKsRwJkUZo",
@@ -114,4 +112,4 @@
       sistRef.set('Desligado');
     });
   
-})();
+
