@@ -18,23 +18,30 @@
     var dadosGlobais = [];
     var timeGlobal = [];
     var refTanque1 = db.ref("Dados tanque 1 (Caixa d'agua)");
-  
+    
+    function dataFormatada (time) {
+      var date = new Date(time*1000);
+      var localeSpecificTime = date.toLocaleTimeString();
+      return localeSpecificTime.replace(/:\d+ /, ' ');
+    }
   
     refTanque1.on('child_added', function(childSnapshot, prevChildKey) {
       let key = childSnapshot.val();
-      //var keys = Object.values(key);
-      //valornivelT1 = key['2- Nivel do tanque'];
-      valorvolT1 = key['3- Volume do tanque'];
-      valortime = key['5- Hora'];
-      function dataFormatada (valortime) {
-        var date = new Date(valortime*1000);
-        var localeSpecificTime = date.toLocaleTimeString();
-        return localeSpecificTime.replace(/:\d+ /, ' ');
-      }
-      dateFormatted = dataFormatada(valortime);
+      alturamedia_caixa = key['alturamedia_caixa'];
+      tank1_vol = key['tank1_vol'];
+      time = key['time'];
+      tank1_level = key['tank1_level'];
+      system_power = key['system_power'];
+      volT1.innerText = tank1_vol + "m3";
+      nivelT1.innerText = tank1_level;
+      statusSist.innerText = system_power;
+
+      
+      dateFormatted = dataFormatada(time);
       console.log(dateFormatted);
-      if (dadosGlobais.length < 20) {
-      dadosGlobais.push(valorvolT1);
+
+      if (dadosGlobais.length < 50) {
+      dadosGlobais.push(alturamedia_caixa);
       timeGlobal.push(dateFormatted);
       } else {
         dadosGlobais.shift();
@@ -68,23 +75,25 @@
 
     var refTanque2 = db.ref("Dados tanque 2 (Poço)");
     refTanque2.on('child_added', function(childSnapshot, prevChildKey) {
-      let item = (childSnapshot.val());
-      valornivelT2 = item['2- Nivel do tanque'];
-      valorvolT2 = item['3- Volume do tanque'];
+      let key = childSnapshot.val();
+      alturamedia_poco = key['alturamedia_poco'];
+      tank2_vol = key['tank2_vol'];
+      time = key['time'];
+      tank2_level = key['tank2_level'];
+      system_power = key['system_power'];
+      temp_bomba = key['temp_bomba'];
+      status_bomba = key['status_bomba']
     });
 
     
     
 
     //Enviando para página HTML os dados de on/off, volume, nível dos tanques e temperatura da bomba
-    const volT1ref = db.ref("Volume do tanque 1");
-    volT1ref.on('value', snap => volT1.innerText = snap.val() + "m3");
-
+    
     const volT2ref = db.ref("Volume do tanque 2");
     volT2ref.on('value', snap => volT2.innerText = snap.val() + "m3");
 
-    const nivelT1ref = db.ref("Nivel do tanque 1");
-    nivelT1ref.on('value', snap => nivelT1.innerText = snap.val());
+    
 
     const nivelT2ref = db.ref("Nível do tanque 2");
     nivelT2ref.on('value', snap => nivelT2.innerText = snap.val());
@@ -92,7 +101,7 @@
     const tempBombaref = db.ref("temp");
     tempBombaref.on('value', snap => tempBomba.innerText = snap.val() + "ºC");
     
-    const sistRef = db.ref("Status do Sistema");
+    const sistRef = db.ref("system_power");
     sistRef.on('value', snap => statusSist.innerText = snap.val());
 
       // Registrar função de click no botão de Liga/Desliga
