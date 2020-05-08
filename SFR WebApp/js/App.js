@@ -1,3 +1,4 @@
+(function(){
     // Inicia o firebase Firebase
     var config = {
         apiKey: "AIzaSyCKfz5qjYidlClPlXCf_X73YXKsRwJkUZo",
@@ -10,6 +11,7 @@
         measurementId: "G-FCCWN7LQZB"
     };
     firebase.initializeApp(config);
+
 
     db = firebase.database();
   
@@ -113,3 +115,4 @@
     });
   
 
+  })();
