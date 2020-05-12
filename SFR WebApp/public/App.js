@@ -50,8 +50,23 @@
       
     });
     
-    var ctx = document.getElementById('volChart').getContext('2d');
-    var chart = new Chart(ctx, {
+
+    var refTanque2 = db.ref("Dados tanque 2 (Poço)");
+    refTanque2.on('child_added', function(childSnapshot, prevChildKey) {
+      let key = childSnapshot.val();
+      alturamedia_poco = key['alturamedia_poco'];
+      tank2_vol = key['tank2_vol'];
+      time = key['time'];
+      tank2_level = key['tank2_level'];
+      system_power = key['system_power'];
+      temp_bomba = key['temp_bomba'];
+      status_bomba = key['status_bomba']
+    });
+
+    //Construindo gráficos
+    // GRÁFICO DE VOLUME DO TANQUE 1
+    var ctx1 = document.getElementById('volT1Chart').getContext('2d');
+    var chart = new Chart(ctx1, {
     // The type of chart we want to create
     type: 'line',
 
@@ -71,22 +86,27 @@
     options: {}
 });
     
-    
+    // GRÁFICO DE VOLUME DO TANQUE 2
+    var ctx2 = document.getElementById('volT2Chart').getContext('2d');
+    var chart = new Chart(ctx2, {
+    // The type of chart we want to create
+    type: 'line',
 
-    var refTanque2 = db.ref("Dados tanque 2 (Poço)");
-    refTanque2.on('child_added', function(childSnapshot, prevChildKey) {
-      let key = childSnapshot.val();
-      alturamedia_poco = key['alturamedia_poco'];
-      tank2_vol = key['tank2_vol'];
-      time = key['time'];
-      tank2_level = key['tank2_level'];
-      system_power = key['system_power'];
-      temp_bomba = key['temp_bomba'];
-      status_bomba = key['status_bomba']
-    });
+    // The data for our dataset
+    data: {
+        labels: timeGlobal,
+        label: 'Hora',
+        datasets: [{
+            label: 'Volume do tanque 2 [m3]',
+            backgroundColor: 'transparent',
+            borderColor: 'rgb(255, 99, 132)',
+            data: dadosGlobais
+        }]
+    },
 
-    
-    
+    // Configuration options go here
+    options: {}
+});
 
     //Enviando para página HTML os dados de on/off, volume, nível dos tanques e temperatura da bomba
     

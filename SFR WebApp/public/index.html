@@ -1,49 +1,163 @@
 <!DOCTYPE html>
-<head>
+<html>
+  <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Login</title>
+    <title>Smart Fazenda Real</title>
+    
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <link ref="stylesheet" type="text/css" media="screen" href="main.css">
-    <link rel="stylesheet" type="text/css" href="../css/loginStyle.css">
-    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-auth.js"></script>
-    <script src="../js/auth.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.min.css">
+    <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-app.js"></script>
     
-</head>
-<body>
     
-    <div id="formContainer">
-        <div class="card">
-            <div class="card-top">
-                <img class="imglogin" src="../img/user.png" alt="">
-                <h2 class="title">Painel de Controle</h2>
-                <h4><p class="title">Smart Fazenda Real</p></h2>
-            </div>
-            <div class="card-group">
-                <label>Email</label>
-                <input id="email" type="email" placeholder="Digite seu email" required>
-            </div>
-            <div class="card-group">
-                <label>Senha</label>
-                <input id="password" type="password" placeholder="Digite sua senha" required>
-            </div>
-            <div class="card-group">
-                <label><input type="checkbox">Lembre-me</label>
-            </div>
-            <div class="card-group btn">
-                <button onclick="signIn()" id="signIn">Acessar</button>
-            </div>
+    <style>
+      body{
+        background-color: #E0E0E0;
+        
+      }
+
+      .content {
+        margin-top: 50px;
+      }
+
+      nav {
+        background: rgb(0,204,245);
+        background: linear-gradient(90deg, rgba(0,204,245,1) 0%, rgba(44,44,212,1) 100%);
+        
+      }
+
+      .statistic {
+        font-size: 8em;
+        margin-top: 15px !important;
+      }
+
+      .card {
+        height: 300px;
+        width: 350px;
+        min-width: 200px;
+        min-height: 200px;
+        
+      }
+
+      .activator {
+        cursor: pointer;
+      }
+      
+      @media screen and (max-width: 600px){
+        .statistic {
+          font-size: 5em;
+        }
+      }
+
+    </style>
+
+  </head>
+  
+  <body>
+    <div class="navbar-fixed">
+      <nav class="nav-extended">
+        <div class="nav-wrapper">
+          <a href="#" class="brand-logo center">Smart Fazenda Real</a>
         </div>
+        <div class="nav-content center">
+          <h6>Painel de Controle</h6>
+        </div>
+      </nav>
     </div>
 
+    <div class="container content">
+      <br/>
+      <div class="row">
+        <div class="col s12 m4">
+          <!-- CARD ON/OFF SISTEMA-->
+          <div class="card small">
+            <div class="card-content">
+              <span class="card-title">Status do Sistema</span>
+              <div class="card-image center">
+                <h1 id="statusSist"></h1>
+                
+              </div>
+            </div>
+            <div class="card-action">
+              <a class="waves-effect waves-light btn col s6" id="btn-On">
+                <i class="material-icons left">flash_on</i>
+                Ligar
+              </a>
+              <a class="waves-effect waves-light btn col s6" id="btn-Off">
+                <i class="material-icons left">flash_off</i>
+                Desligar
+              </a>
+            </div>
+          </div>
+          <div class="card small">
+            <div class="card-content">
+              <span class="card-title">Temperatura da Bomba</span>
+              <div class="card-image center">
+                <h1 id="tempBomba"></h1>
+              </div>
+            </div>
+          </div>
+        </div>
 
-</body>
+        <div class="col s12 m4">
+          <!-- FIM DO CARD ON/OFF SISTEMA-->
+          <!-- INICIO DOS CARDS DE NIVEL-->
+          <div class="card small">
+            <div class="card-content">
+              <span class="card-title">Nível do Tanque 1</span>
+              <div class="card-image center">
+                <h1 id="nivelT1"></h1>
+              </div>
+            </div>
+          </div>
+          <div class="card small">
+            <div class="card-content">
+              <span class="card-title">Nível do Tanque 2</span>
+              <div class="card-image center">
+                <h1 id="nivelT2"></h1>
+              </div>
+            </div>
+          </div>
+        </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
-<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/js/materialize.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
-
-
+          <!-- FIM DOS CARDS DE NIVEL-->
+          <!-- INICIO DOS CARDS DE VOLUME-->
+        <div class="col s12 m4">
+          <div class="card small">
+            <div class="card-content">
+              <span class="card-title">Volume do Tanque 1</span>
+              <div class="card-image center">
+                <h1 id="volT1"></h1>
+              </div>
+            </div>
+          </div>
+          <div class="card small">
+            <div class="card-content">
+              <span class="card-title">Volume do Tanque 2</span>
+              <div class="card-image center">
+                <h1 id="volT2"></h1>
+              </div>
+            </div>
+          </div>
+          <!-- FIM DOS CARDS DE VOLUME-->
+        </div>
+      </div>
+      <div class="container content">
+        <div class="row">
+          
+            <canvas id="volT1Chart"></canvas>
+            <canvas id="volT2Chart"></canvas>
+          
+        </div>
+      </div>
+    </div>
+        
+  </body>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/js/materialize.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-database.js"></script>
+  <script src="App.js"></script>
 </html>
