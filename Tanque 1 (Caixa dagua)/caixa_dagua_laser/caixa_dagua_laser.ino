@@ -135,6 +135,7 @@ void loop() {
       root["system_power"] = system_power;
 
       Firebase.setString("tank1_level", tank1_level);
+      Firebase.setFloat("alturamedia_caixa", alturamedia_caixa);
       Firebase.push(TABLE_NAME, root);
       
       } else {

@@ -142,6 +142,7 @@ void loop() {
       root["time"] = epochTime;
       root["system_power"] = system_power;
 
+      Firebase.setString("alturamedia_caixa", alturamedia_caixa);
       Firebase.setString("tank1_level", tank1_level);
       Firebase.push(TABLE_NAME, root);
       

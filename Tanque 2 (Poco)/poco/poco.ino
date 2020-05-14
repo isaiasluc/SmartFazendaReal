@@ -152,7 +152,9 @@ void loop() {
       root["tank2_vol"] = tank2_vol;
       root["time"] = epochTime;
       root["system_power"] = system_power;
-      
+
+      Firebase.setString("tank2_level", tank2_level);
+      Firebase.setFloat("alturamedia_poco", alturamedia_poco);
       Firebase.push(TABLE_NAME, root);
 
     } else {
