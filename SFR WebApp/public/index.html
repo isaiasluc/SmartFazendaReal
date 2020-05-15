@@ -138,14 +138,17 @@
           <!-- FIM DOS CARDS DE VOLUME-->
         </div>
       </div>
-      <div class="container content">
-        <div class="row">
+
+      <center><button onclick="showgraphs()">Ocultar/Mostrar Gráficos de Volume</button></center>
+      <div id="showgraphs">
+        <div class="container content">
+          <div class="row">
             <canvas id="volT1Chart"></canvas>
             <canvas id="volT2Chart"></canvas>
             <canvas id="barVolChart"></canvas>
+          </div>
         </div>
       </div>
-    </div>
         
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
@@ -153,5 +156,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/js/materialize.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/6.2.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/6.2.0/firebase-database.js"></script>
+  <script src="js/firebase.js"></script>
   <script src="js/App.js"></script>
 </html>

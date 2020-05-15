@@ -1,17 +1,7 @@
-(function(){
+(function (){
     // Inicia o Firebase
-    var config = {
-      apiKey: "AIzaSyCKfz5qjYidlClPlXCf_X73YXKsRwJkUZo",
-      authDomain: "smart-fazenda-real.firebaseapp.com",
-      databaseURL: "https://smart-fazenda-real.firebaseio.com",
-      projectId: "smart-fazenda-real",
-      storageBucket: "smart-fazenda-real.appspot.com",
-      messagingSenderId: "813001947604",
-      appId: "1:813001947604:web:9a039b36884b9bc0bdbe41",
-      measurementId: "G-FCCWN7LQZB"
-  };
-  firebase.initializeApp(config);
-//    var firebase = app_firebase;
+    
+    var firebase = app_firebase;
     var db = firebase.database();
   
     var dadosGlobais = [];
@@ -82,7 +72,7 @@
     });
     
     
-
+    
     //Construindo gráficos
     // GRÁFICO DE VOLUME DO TANQUE 1
     var ctx1 = document.getElementById('volT1Chart').getContext('2d');
@@ -107,6 +97,7 @@
 });
     
     // GRÁFICO DE VOLUME DO TANQUE 2
+
     var ctx2 = document.getElementById('volT2Chart').getContext('2d');
     var chart = new Chart(ctx2, {
     // The type of chart we want to create
@@ -150,7 +141,7 @@
             label: 'Altura do tanque 2 [cm]',
             backgroundColor: 'red',
             borderColor: 'rgb(255,99,132)',
-            data:distT2
+            data: distT2
           }]
       },
 
@@ -159,6 +150,9 @@
     }
         
   });
+
+    
+
 
     //Enviando para página HTML os dados de on/off, volume, nível dos tanques e temperatura da bomba
     
@@ -177,6 +171,17 @@
     btnOff.addEventListener('click', function(evt){
       sistRef.set('Desligado');
     });
-  
 
+    
   })();
+
+  //Função para mostrar ou ocultar os gráficos
+  function showgraphs() {
+    var x = document.getElementById("showgraphs");
+    
+    if (x.style.display === "none") {
+      x.style.display = "block";      
+    } else {
+      x.style.display = "none";
+    }
+  }
