@@ -23,7 +23,7 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 #define TABLE_NAME "Dados tanque 1 (Caixa d'agua)"
 
 //Configuraçõs do WiFi
-#define WIFI_SSID "William_2.4GHZ" //Nome da Wifi
+#define WIFI_SSID "William" //Nome da Wifi
 #define WIFI_PASSWORD "camaleao" //Senha da Wifi
 
 // CRIANDO OBJETO JSON PARA ENVIAR DADOS AO FIREBASE
@@ -51,15 +51,16 @@ SFEVL53L1X distanceSensor;
 
 float distancia () {
   distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
+  float offset=20;
   while (!distanceSensor.checkForDataReady()) {
     delay(1);
   }
-  int distance = distanceSensor.getDistance(); //Get the result of the measurement from the sensor
+  float distance = (distanceSensor.getDistance()+offset)/10; //Get the result of the measurement from the sensor
   distanceSensor.clearInterrupt();
   distanceSensor.stopRanging();
-  float distancia = distance/10;
   
-return distancia;
+  
+return distance;
 }
 // ------------------------------
 
@@ -67,6 +68,7 @@ void setup() {
   //Iniciando comunicação serial
   Wire.begin();
   Serial.begin(115200);
+  
   delay(1000);
   if (distanceSensor.begin() == 0) { //Begin returns 0 on a good init
     Serial.println("Sensor online!");
@@ -119,7 +121,7 @@ void loop() {
     if(publishNewState){
       Serial.println("Publicando novo estado");
       //Mandando os dados coletados para o Firebase
-      if (alturamedia_caixa > 25) {
+      if (alturamedia_caixa > 250) {
         Serial.println("Nivel do tanque 1: LOW");
         tank1_level = "LOW";
       } else {

@@ -4,14 +4,15 @@
     var firebase = app_firebase;
     var db = firebase.database();
   
-    var dadosGlobais = [];
+    var dadosGlobaisT1 = [];
+    var dadosGlobaisT2 = [];
     var timeGlobal = [];
     var distT1 = [];
     var distT2 = [];
     
 
     var refTanque1 = db.ref("Dados tanque 1 (Caixa d'agua)");
-    var refTanque2 = db.ref("Dados tanque 2 (Poço)");
+    var refTanque2 = db.ref("Dados tanque 2 (Poco)");
       
     function dataFormatada (time) {
       var date = new Date(time*1000);
@@ -33,11 +34,11 @@
 
       dateFormatted = dataFormatada(time);
       
-      if (dadosGlobais.length < 50) {
-      dadosGlobais.push(alturamedia_caixa);
+      if (dadosGlobaisT1.length < 60) {
+      dadosGlobaisT1.push(alturamedia_caixa);
       timeGlobal.push(dateFormatted);
       } else {
-        dadosGlobais.shift();
+        dadosGlobaisT1.shift();
         timeGlobal.shift();
       }
       
@@ -49,7 +50,7 @@
       distT1.push(snapshot.val());
     });
     
-    var alturaT2 = db.ref("alturamedia_tanque");
+    var alturaT2 = db.ref("alturamedia_poco");
     alturaT2.on('value', function(snapshot) {
       distT2.push(snapshot.val());
     });
@@ -68,6 +69,17 @@
       volT2.innerText = tank2_vol + "m3";
       nivelT2.innerText = tank2_level;
       tempBomba.innerText = temp_bomba;
+      statusSist.innerText = system_power;
+
+      dateFormatted = dataFormatada(time);
+      
+      if (dadosGlobaisT2.length < 60) {
+      dadosGlobaisT2.push(alturamedia_poco);
+      timeGlobal.push(dateFormatted);
+      } else {
+        dadosGlobaisT2.shift();
+        timeGlobal.shift();
+      }
       
     });
     
@@ -88,7 +100,7 @@
             label: 'Volume do tanque 1 [m3]',
             backgroundColor: 'transparent',
             borderColor: 'rgb(255, 99, 132)',
-            data: dadosGlobais
+            data: dadosGlobaisT1
         }]
     },
 
@@ -111,7 +123,7 @@
             label: 'Volume do tanque 2 [m3]',
             backgroundColor: 'transparent',
             borderColor: 'rgb(255, 99, 132)',
-            data: dadosGlobais
+            data: dadosGlobaisT2
         }]
     },
 

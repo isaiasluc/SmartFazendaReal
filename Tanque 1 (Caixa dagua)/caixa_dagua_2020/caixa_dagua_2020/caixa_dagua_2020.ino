@@ -14,7 +14,7 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 #define TABLE_NAME "Dados tanque 1 (Caixa d'agua)"
 
 //Configuraçõs do WiFi
-#define WIFI_SSID "William_2.4GHZ" //Nome da Wifi
+#define WIFI_SSID "William" //Nome da Wifi
 #define WIFI_PASSWORD "camaleao" //Senha da Wifi
 
 //Definindo pinos para trigger e echo do sensor HCSR04 (Ultrassom)
@@ -142,7 +142,7 @@ void loop() {
       root["time"] = epochTime;
       root["system_power"] = system_power;
 
-      Firebase.setString("alturamedia_caixa", alturamedia_caixa);
+      Firebase.setFloat("alturamedia_caixa", alturamedia_caixa);
       Firebase.setString("tank1_level", tank1_level);
       Firebase.push(TABLE_NAME, root);
       
