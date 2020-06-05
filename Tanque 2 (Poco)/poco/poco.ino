@@ -1,4 +1,4 @@
-#include <ESP8266WiFi.h> //Conexão WiFi do ESP8266
+//#include <ESP8266WiFi.h> //Conexão WiFi do ESP8266
 #include <FirebaseArduino.h> //Contém todas as funções que utilizaremos do Firebase
 #include <Ticker.h> //Biblioteca para usar os timers
 #include <NTPClient.h> //Biblioteca necessária para obter data e hora
@@ -23,7 +23,7 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 #define TABLE_NAME "Dados tanque 2 (Poco)"
 
 //Configuraçõs do WiFi
-#define WIFI_SSID "William" //Nome da Wifi
+#define WIFI_SSID "William_2.4GHZ" //Nome da Wifi
 #define WIFI_PASSWORD "camaleao" //Senha da Wifi
 
 
@@ -72,7 +72,7 @@ void setup() {
   //Iniciando comunicação serial
   //Iniciando comunicação serial
   Wire.begin();
-  Serial.begin(115200);
+  Serial.begin(9600);
   delay(1000);
   if (distanceSensor.begin() == 0) { //Begin returns 0 on a good init
     Serial.println("Sensor online!");
