@@ -18,8 +18,8 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 #define WIFI_PASSWORD "camaleao" //Senha da Wifi
 
 //Definindo pinos para trigger e echo do sensor HCSR04 (Ultrassom)
-#define trigPin D7
-#define echoPin D8
+#define trigPin D4
+#define echoPin D5
 
 // CRIANDO OBJETO JSON PARA ENVIAR DADOS AO FIREBASE
 // -------------------------------------------
@@ -36,10 +36,26 @@ void publish(){
   publishNewState = true;
 }
 #define PUBLISH_INTERVAL 1000*60*0.166
-// -------------------------------
 
 // ------------------------------
-// FUNÇÃO DISTANCIA
+// FUNÇÃO DISTANCIA E FUNÇÃO QUE FILTRA A DISTÂNCIA
+
+#define n 10 //Número de pontos
+
+float real, filtrado;
+float numbers[n];
+
+float moving_average() {
+  for (int i=n-1;i>0;i--) numbers[i]=numbers[i-1];
+
+  numbers[0] = real;
+
+  float acc = 0;
+
+  for (int i=0;i<n;i++) acc += numbers[i];
+
+  return (acc/n);
+}
 
 float distancia () {
   float distance;
@@ -62,6 +78,8 @@ distance= duration*0.034/2;
 return distance;
 }
 // ------------------------------
+
+const int rele = D6;
 
 void setup() {
   //Iniciando comunicação serial
@@ -99,8 +117,15 @@ void loop() {
   timeClient.update();
   unsigned long epochTime = timeClient.getEpochTime(); //Retorna o timestamp
   String formattedTime = timeClient.getFormattedTime();
+
+  float x,x2;
+  x=distancia();
+  x2=x*x;
+
+  real = ((-0.00053187*x2)+(1.0178*x)-0.65671);
+  filtrado = moving_average();
   
-  float alt1, alt2, alt3, alt4, alt5, alturamedia_caixa, tank1_vol;
+  float alturamedia_caixa, tank1_vol, alturaagua;
   String tank1_level, system_power;
   
   //Dimensões do reservatório em cm
@@ -110,18 +135,9 @@ void loop() {
   system_power=Firebase.getString("system_power");
 
   if (system_power=="Ligado") {
-    alt1=distancia();
-    delay(1000);
-    alt2=distancia();
-    delay(1000);
-    alt3=distancia();
-    delay(1000);
-    alt4=distancia();
-    delay(1000);
-    alt5=distancia();
-    delay(1000);
-    alturamedia_caixa=(alt1+alt2+alt3+alt4+alt5)/5;
-    tank1_vol=(((3.1415*(h-alturamedia_caixa))*((R*R)+(R*r)+(r*r))/3)/1000);
+    alturamedia_caixa=filtrado;
+    alturaagua=h-alturamedia_caixa;
+    tank1_vol=(((3.1415*(alturaagua))*((R*R)+(R*r)+(r*r))/3)/100);
     
     // Apenas publique quando passar o tempo determinado
     if(publishNewState){

@@ -1,4 +1,4 @@
-//#include <ESP8266WiFi.h> //Conexão WiFi do ESP8266
+#include <ESP8266WiFi.h> //Conexão WiFi do ESP8266
 #include <FirebaseArduino.h> //Contém todas as funções que utilizaremos do Firebase
 #include <Ticker.h> //Biblioteca para usar os timers
 #include <NTPClient.h> //Biblioteca necessária para obter data e hora
@@ -48,12 +48,28 @@ void publish(){
 SFEVL53L1X distanceSensor;
 
 // ------------------------------
-// FUNÇÃO DISTANCIA
+// FUNÇÃO DISTANCIA E FUNÇÃO QUE FILTRA A DISTÂNCIA
+
+#define n 10 //Número de pontos
+
+float real, filtrado;
+float numbers[n];
+
+float moving_average() {
+  for (int i=n-1;i>0;i--) numbers[i]=numbers[i-1];
+
+  numbers[0] = real;
+
+  float acc = 0;
+
+  for (int i=0;i<n;i++) acc += numbers[i];
+
+  return (acc/n);
+}
 
 float distancia () {
   distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
   float offset=20;
-  //distanceSensor.setOffset(1);
   while (!distanceSensor.checkForDataReady()) {
     delay(1);
   }
@@ -70,9 +86,9 @@ const int rele = D6;
 
 void setup() {
   //Iniciando comunicação serial
-  //Iniciando comunicação serial
   Wire.begin();
-  Serial.begin(9600);
+  Serial.begin(115200);
+  
   delay(1000);
   if (distanceSensor.begin() == 0) { //Begin returns 0 on a good init
     Serial.println("Sensor online!");
@@ -102,7 +118,7 @@ void setup() {
   Firebase.setString("system_power", "Desligado"); //Seta o estado inicial do sistema para Desligado
 
   //Registrando o Ticker para publicar de tempos em tempos
-  ticker.attach_ms(PUBLISH_INTERVAL, publish);                                            // inicializa o sistema desligado
+  ticker.attach_ms(PUBLISH_INTERVAL, publish); 
 }
 
 void loop() {
@@ -110,19 +126,28 @@ void loop() {
   unsigned long epochTime = timeClient.getEpochTime(); //Retorna o timestamp
   String formattedTime = timeClient.getFormattedTime();
 
-  float alturamedia_poco, tank2_vol;
+  float x,x2,x3;
+  x=distancia();
+  x3=x*x*x;
+  x2=x*x;
+
+  real = (0.00141745*x2)+(0.589656*x)+(48.955);
+  filtrado = moving_average();
+
+  float alturamedia_poco, tank2_vol, alturaagua;
   int temp_bomba;
   String tank2_level, system_power, tank1Status, status_bomba;
 
-  //Dimensões do poco em cm
-  float R=14.5, r=13, h=32;
+  //Dimensões do poco em mm
+  float R=145, r=130, h=320;
 
   //LIGANDO SISTEMA
   system_power=Firebase.getString("system_power");
   
   if (system_power=="Ligado") {
-    alturamedia_poco=distancia();
-    tank2_vol=(((3.1415*(h-alturamedia_poco))*((R*R)+(R*r)+(r*r))/3)/1000);
+    alturamedia_poco=filtrado;
+    alturaagua=h-alturamedia_poco;
+    tank2_vol=(((3.1415*(alturaagua))*((R*R)+(R*r)+(r*r))/3)/1000);
     
     tank1Status = Firebase.getString("tank1_level");
     
@@ -134,12 +159,10 @@ void loop() {
         digitalWrite (rele,LOW);
         status_bomba="ON";
         Serial.println("BOMBA LIGADA");
-        Serial.println("Nivel do tanque 1: LOW");
       } else if (tank1Status == "FULL") {
         digitalWrite (rele,HIGH);
         status_bomba="OFF";
         Serial.println("BOMBA DESLIGADA");
-        Serial.println("Nivel do tanque 1: FULL");
       }
       publishNewState = false;
       
@@ -159,7 +182,7 @@ void loop() {
       Serial.println("Erro ao publicar estado");
     }
     //Exibindo informações no Serial Monitor do Arduino IDE
-    Serial.print("Distancia em cm: ");
+    Serial.print("Distancia em mm: ");
     Serial.println(alturamedia_poco);
     Serial.print("Hora: ");
     Serial.println(formattedTime);

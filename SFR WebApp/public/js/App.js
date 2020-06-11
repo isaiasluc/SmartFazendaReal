@@ -16,7 +16,7 @@
       
     function dataFormatada (time) {
       var date = new Date(time*1000);
-      var localeSpecificTime = date.toLocaleTimeString();
+      var localeSpecificTime = date.toTimeString();
       return localeSpecificTime.replace(/:\d+ /, ' ');
     }
   
@@ -35,7 +35,7 @@
       dateFormatted = dataFormatada(time);
       
       if (dadosGlobaisT1.length < 60) {
-      dadosGlobaisT1.push(alturamedia_caixa);
+      dadosGlobaisT1.push(32-alturamedia_caixa);
       timeGlobal.push(dateFormatted);
       } else {
         dadosGlobaisT1.shift();
@@ -74,7 +74,7 @@
       dateFormatted = dataFormatada(time);
       
       if (dadosGlobaisT2.length < 60) {
-      dadosGlobaisT2.push(alturamedia_poco);
+      dadosGlobaisT2.push(32-alturamedia_poco);
       timeGlobal.push(dateFormatted);
       } else {
         dadosGlobaisT2.shift();
@@ -144,13 +144,13 @@
         
         labels: ['Nível dos Tanques'],
         datasets: [{
-            label: 'Altura do tanque 1 [cm]',
+            label: 'Altura do tanque 1 [mm]',
             backgroundColor: 'blue',
             borderColor: 'rgb(255,99,132)',
             data: distT1
         },
           {
-            label: 'Altura do tanque 2 [cm]',
+            label: 'Altura do tanque 2 [mm]',
             backgroundColor: 'red',
             borderColor: 'rgb(255,99,132)',
             data: distT2
