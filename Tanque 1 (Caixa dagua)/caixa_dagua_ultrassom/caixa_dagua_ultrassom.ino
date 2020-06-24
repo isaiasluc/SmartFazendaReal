@@ -14,7 +14,7 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 #define TABLE_NAME "Dados tanque 1 (Caixa d'agua)"
 
 //Configuraçõs do WiFi
-#define WIFI_SSID "William" //Nome da Wifi
+#define WIFI_SSID "William_2.4GHZ" //Nome da Wifi
 #define WIFI_PASSWORD "camaleao" //Senha da Wifi
 
 //Definindo pinos para trigger e echo do sensor HCSR04 (Ultrassom)
@@ -79,8 +79,6 @@ return distance;
 }
 // ------------------------------
 
-const int rele = D6;
-
 void setup() {
   //Iniciando comunicação serial
   Serial.begin(115200);
@@ -122,7 +120,7 @@ void loop() {
   x=distancia();
   x2=x*x;
 
-  real = ((-0.00053187*x2)+(1.0178*x)-0.65671);
+  real = ((-0.0099145*x2)+(1.3416*x)-2.6411);
   filtrado = moving_average();
   
   float alturamedia_caixa, tank1_vol, alturaagua;
@@ -139,10 +137,6 @@ void loop() {
     alturaagua=h-alturamedia_caixa;
     tank1_vol=(((3.1415*(alturaagua))*((R*R)+(R*r)+(r*r))/3)/100);
     
-    // Apenas publique quando passar o tempo determinado
-    if(publishNewState){
-      Serial.println("Publicando novo estado");
-      //Mandando os dados coletados para o Firebase
       if (alturamedia_caixa > 25) {
         Serial.println("Nivel do tanque 1: LOW");
         tank1_level = "LOW";
@@ -150,7 +144,6 @@ void loop() {
         Serial.println("Nivel do tanque 1: FULL");
         tank1_level = "FULL";
       }
-      publishNewState = false;
 
       root["alturamedia_caixa"] = alturamedia_caixa;
       root["tank1_level"] = tank1_level;
@@ -162,14 +155,11 @@ void loop() {
       Firebase.setString("tank1_level", tank1_level);
       Firebase.push(TABLE_NAME, root);
       
-      } else {
-        Serial.println("Erro ao publicar estado");
-      }
     //Exibindo informações no Serial Monitor do Arduino IDE
     Serial.print("Distancia em cm: ");
     Serial.println(alturamedia_caixa);
-    Serial.print("Hora: ");
-    Serial.println(formattedTime);
+    //Serial.print("Hora: ");
+    //Serial.println(formattedTime);
     delay(10000);
   } else if (system_power=="Desligado") {
     Serial.println("Sistema desligado");

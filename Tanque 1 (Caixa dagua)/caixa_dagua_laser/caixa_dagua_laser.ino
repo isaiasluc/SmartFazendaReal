@@ -5,13 +5,8 @@
 #include <WiFiUdp.h> //Utiliza em conjunto com a NTPClient.h
 
 //Incluindo bibliotecas necessárias para o sensor laser VL53l1x
-#include <ComponentObject.h>
-#include <RangeSensor.h>
-#include <SparkFun_VL53L1X.h>
-#include <vl53l1x_class.h>
-#include <vl53l1_error_codes.h>
 #include <Wire.h>
-#include "SparkFun_VL53L1X.h"
+#include <VL53L1X.h>
 
 //Iniciando uma instância do NTP
 WiFiUDP ntpUDP;
@@ -43,41 +38,27 @@ void publish(){
 #define PUBLISH_INTERVAL 1000*60*0.166
 // -------------------------------
 
-//Iniciando um objeto do tipo SFEVL53L1X
-SFEVL53L1X distanceSensor;
+//Iniciando um objeto VL53L1X chamado sensor
+VL53L1X sensor;
 
 // ------------------------------
-// FUNÇÃO DISTANCIA E FUNÇÃO QUE FILTRA A DISTÂNCIA
+// FILTRO MÉDIA MÓVEL
 
 #define n 10 //Número de pontos
 
-float real, filtrado;
-float numbers[n];
+int real, filtrado;
+int numbers[n];
 
-float moving_average() {
+long moving_average() {
   for (int i=n-1;i>0;i--) numbers[i]=numbers[i-1];
 
   numbers[0] = real;
 
-  float acc = 0;
+  int acc = 0;
 
   for (int i=0;i<n;i++) acc += numbers[i];
 
   return (acc/n);
-}
-
-float distancia () {
-  distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
-  float offset=20;
-  while (!distanceSensor.checkForDataReady()) {
-    delay(1);
-  }
-  float distance = (distanceSensor.getDistance()+offset)/10; //Get the result of the measurement from the sensor
-  distanceSensor.clearInterrupt();
-  distanceSensor.stopRanging();
-  
-  
-return distance;
 }
 
 // ------------------------------
@@ -86,11 +67,18 @@ void setup() {
   //Iniciando comunicação serial
   Wire.begin();
   Serial.begin(115200);
-  
+  Wire.setClock(400000); // 400 kHz I2C communication
   delay(1000);
-  if (distanceSensor.begin() == 0) { //Begin returns 0 on a good init
-    Serial.println("Sensor online!");
+  
+  sensor.setTimeout(500);
+  if (!sensor.init()) {
+    Serial.println("Falha ao detectar e inicializar o sensor!");
+    while (1);
   }
+  sensor.setDistanceMode(VL53L1X::Long);
+  sensor.setMeasurementTimingBudget(50000);
+  sensor.startContinuous(500);
+  
   //Iniciando conexão WiFi
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Conectando com ");
@@ -121,20 +109,16 @@ void loop() {
   timeClient.update();
   unsigned long epochTime = timeClient.getEpochTime(); //Retorna o timestamp
   String formattedTime = timeClient.getFormattedTime();
-
-  float x,x2,x3;
-  x=distancia();
-  x3=x*x*x;
-  x2=x*x;
-
-  real = (0.00141745*x2)+(0.589656*x)+(48.955);
+  
+  real = sensor.read();
   filtrado = moving_average();
   
-  float tank1_vol, alturamedia_caixa, alturaagua;
+  float tank1_vol;
+  int alturamedia_caixa, alturaagua;
   String tank1_level, system_power;
   
   //Dimensões do reservatório em mm
-  float R=145, r=130, h=320;
+  int R=145, r=130, h=330;
 
   //LIGANDO O SISTEMA
   system_power=Firebase.getString("system_power");
@@ -144,18 +128,17 @@ void loop() {
     alturaagua=h-alturamedia_caixa;
     tank1_vol=(((3.1415*(alturaagua))*((R*R)+(R*r)+(r*r))/3)/1000);
     
-    // Apenas publique quando passar o tempo determinado
-    if(publishNewState){
-      Serial.println("Publicando novo estado");
       //Mandando os dados coletados para o Firebase
       if (alturamedia_caixa > 250) {
         Serial.println("Nivel do tanque 1: LOW");
         tank1_level = "LOW";
+      } else if (alturamedia_caixa > 100 && alturamedia_caixa < 250) {
+        Serial.println("Nivel do tanque 1: OK");
+        tank1_level = "OK";
       } else if (alturamedia_caixa < 100) {
         Serial.println("Nivel do tanque 1: FULL");
         tank1_level = "FULL";
       }
-      publishNewState = false;
 
       root["alturamedia_caixa"] = alturamedia_caixa;
       root["tank1_level"] = tank1_level;
@@ -166,15 +149,11 @@ void loop() {
       Firebase.setString("tank1_level", tank1_level);
       Firebase.setFloat("alturamedia_caixa", alturamedia_caixa);
       Firebase.push(TABLE_NAME, root);
+       
       
-      } else {
-        Serial.println("Erro ao publicar estado");
-      }
     //Exibindo informações no Serial Monitor do Arduino IDE
-    Serial.print("Distancia em cm: ");
+    Serial.print("Distancia em mm: ");
     Serial.println(alturamedia_caixa);
-    Serial.print("Hora: ");
-    Serial.println(formattedTime);
     delay(10000);
   } else if (system_power=="Desligado") {
     Serial.println("Sistema desligado");
