@@ -9,7 +9,7 @@
 
 //Iniciando uma instância do NTP
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
+NTPClient timeClient(ntpUDP, "a.st1.ntp.br", -3 * 3600);
 
 //Configuraçõs do Firebase
 #define FIREBASE_HOST "smart-fazenda-real.firebaseio.com"
@@ -70,7 +70,7 @@ void espInit() {
   sensor.startContinuous(1000);
   
   //Iniciando instância do NTP timeClient
-  timeClient.setTimeOffset(-10800); //Offset do NTP Client (-10800 para GTM -3:00hrs)
+  //timeClient.setTimeOffset(0); //Offset do NTP Client (-10800 para GTM -3:00hrs)
   timeClient.begin(); //Inicia o NTP Client
 }
 
