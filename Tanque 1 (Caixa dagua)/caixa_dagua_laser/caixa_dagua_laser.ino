@@ -1,6 +1,5 @@
 #include <ESP8266WiFi.h> //Conexão WiFi do ESP8266
 #include <FirebaseArduino.h> //Contém todas as funções que utilizaremos do Firebase
-#include <Ticker.h> //Biblioteca para usar os timers
 #include <NTPClient.h> //Biblioteca necessária para obter data e hora
 #include <WiFiUdp.h> //Utiliza em conjunto com a NTPClient.h
 
@@ -12,9 +11,6 @@
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 
-//Iniciando objeto ticker
-Ticker timer;
-
 //Configuraçõs do Firebase
 #define FIREBASE_HOST "smart-fazenda-real.firebaseio.com"
 #define FIREBASE_AUTH "aQxXYLGyDzSobw2QDiw4xXB8p10UNPA8sTSKuQn1"
@@ -24,31 +20,19 @@ Ticker timer;
 #define WIFI_SSID "William_2.4GHZ" //Nome da Wifi
 #define WIFI_PASSWORD "camaleao" //Senha da Wifi
 
+//----------------------------------------------------------------------------------------
 // CRIANDO OBJETO JSON PARA ENVIAR DADOS AO FIREBASE
-// -------------------------------------------
+
 StaticJsonBuffer<200> jsonBuffer;
 JsonObject &root = jsonBuffer.createObject();
-// -------------------------------------------
-
-// DEFININDO TICKER DE ATUALIZAÇÃO
-// -------------------------------
-Ticker ticker;
-bool publishNewState = true;
-
-void publish(){
-  publishNewState = true;
-}
-#define PUBLISH_INTERVAL 1000*60*0.166
-// -------------------------------
+//----------------------------------------------------------------------------------------
 
 //Iniciando um objeto VL53L1X chamado sensor
 VL53L1X sensor;
 
-// ------------------------------
 // FILTRO MÉDIA MÓVEL
 
 #define n 5 //Número de pontos
-
 int real, filtrado;
 int numbers[n];
 
@@ -64,24 +48,33 @@ long moving_average() {
   return (acc/n);
 }
 
-// ------------------------------
+//----------------------------------------------------------------------------------------
 
-void setup() {
+// FUNÇÕES PARA INICIAR O SENSOR E COMUNICAÇÃO SERIAL
+
+void espInit() {
   //Iniciando comunicação serial
   Wire.begin();
   Serial.begin(115200);
   Wire.setClock(400000); // 400 kHz I2C communication
   delay(1000);
-  
-  sensor.setTimeout(500);
+
+  //Iniciando sensor
+  sensor.setTimeout(1000);
   if (!sensor.init()) {
     Serial.println("Falha ao detectar e inicializar o sensor!");
     while (1);
   }
   sensor.setDistanceMode(VL53L1X::Long);
   sensor.setMeasurementTimingBudget(50000);
-  sensor.startContinuous(500);
+  sensor.startContinuous(1000);
   
+  //Iniciando instância do NTP timeClient
+  timeClient.setTimeOffset(-10800); //Offset do NTP Client (-10800 para GTM -3:00hrs)
+  timeClient.begin(); //Inicia o NTP Client
+}
+
+void wifiInit() {
   //Iniciando conexão WiFi
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Conectando com ");
@@ -97,69 +90,77 @@ void setup() {
   Serial.println(WiFi.localIP());
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   WiFi.mode(WIFI_STA);
-
-  timeClient.setTimeOffset(0); //Offset do NTP Client (-10800 para GTM -3:00hrs)
-  timeClient.begin(); //Inicia o NTP Client
-
+  
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH); //Inicia uma instância do Firebase
   Firebase.setString("system_power", "Desligado"); //Seta o estado inicial do sistema para Desligado
-
-  //Registrando o Ticker para publicar de tempos em tempos
-  ticker.attach_ms(PUBLISH_INTERVAL, publish);
+  Serial.println("Iniciada instância do Firebase");
+  Serial.println("Setando estado inicial do sistema para Desligado");
 }
+//----------------------------------------------------------------------------------------
 
-void loop() {
+//FUNÇÃO PARA ATUALIZAR DATA E HORA
+
+int timeUpdate() {
   timeClient.update();
   unsigned long epochTime = timeClient.getEpochTime(); //Retorna o timestamp
-  String formattedTime = timeClient.getFormattedTime();
+  //String formattedTime = timeClient.getFormattedTime(); //Retorna hora formatada
+  
+  return epochTime;
+}
+//----------------------------------------------------------------------------------------
+
+//FUNÇÃO QUE CALCULA OS DADOS E ENVIA PARA O FIREBASE
+
+void enviaDados() {
+  float caixaVol;
+  int caixaAlturaAgua, timestamp;
+  String caixaLevel, system_power;
   
   real = sensor.read();
   filtrado = moving_average();
-  
-  float tank1_vol;
-  int alturamedia_caixa, alturaagua;
-  String tank1_level, system_power;
-  
+  timestamp = timeUpdate();
+
   //Dimensões do reservatório em mm
   int R=145, r=130, h=337;
 
   //LIGANDO O SISTEMA
   system_power=Firebase.getString("system_power");
 
-  if (system_power=="Ligado") {
-    alturamedia_caixa=filtrado;
-    alturaagua=h-alturamedia_caixa;
-    tank1_vol=(((3.1415*(alturaagua))*((R*R)+(R*r)+(r*r))/3)/1000);
-    
-      //Mandando os dados coletados para o Firebase
-      if (alturamedia_caixa > 250) {
-        Serial.println("Nivel do tanque 1: LOW");
-        tank1_level = "LOW";
-      } else if (alturamedia_caixa > 100 && alturamedia_caixa < 250) {
-        Serial.println("Nivel do tanque 1: OK");
-        tank1_level = "OK";
-      } else if (alturamedia_caixa < 100) {
-        Serial.println("Nivel do tanque 1: FULL");
-        tank1_level = "FULL";
+  if (system_power == "Desligado") {
+    Serial.println("Sistema desligado");
+  } else if (system_power == "Ligado") {
+    caixaAlturaAgua=h-filtrado;
+    caixaVol=(((3.1415*(caixaAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000);
+  
+  //Mandando os dados coletados para o Firebase
+      if (caixaAlturaAgua > 250) {
+        caixaLevel = "HIGH";
+      } else if (caixaAlturaAgua > 100 && caixaAlturaAgua < 250) {
+        caixaLevel = "OK";
+      } else if (caixaAlturaAgua < 100) {
+        caixaLevel = "LOW";
       }
-
-      root["alturamedia_caixa"] = alturamedia_caixa;
-      root["tank1_level"] = tank1_level;
-      root["tank1_vol"] = tank1_vol;
-      root["time"] = epochTime;
+      
+      root["caixaAlturaAgua"] = caixaAlturaAgua;
+      root["caixaLevel"] = caixaLevel;
+      root["caixaVol"] = caixaVol;
+      root["timestamp"] = timestamp;
       root["system_power"] = system_power;
 
-      Firebase.setString("tank1_level", tank1_level);
-      Firebase.setFloat("alturamedia_caixa", alturamedia_caixa);
+      Firebase.setString("caixaLevel", caixaLevel);
+      Firebase.setFloat("caixaAlturaAgua", caixaAlturaAgua);
       Firebase.push(TABLE_NAME, root);
-       
-      
-    //Exibindo informações no Serial Monitor do Arduino IDE
-    Serial.print("Altura em mm: ");
-    Serial.println(alturaagua);
-    delay(5000);
-  } else if (system_power=="Desligado") {
-    Serial.println("Sistema desligado");
-    delay(2000);
-  }
+
+      Serial.println("Dados enviados com sucesso!");
+      }
+}
+
+void setup() {
+  espInit();
+  wifiInit();
+}
+
+void loop() {
+  enviaDados();
+  delay(1000);
 }
