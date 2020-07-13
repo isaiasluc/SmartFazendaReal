@@ -12,6 +12,9 @@
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 
+//Iniciando objeto ticker
+Ticker timer;
+
 //Configuraçõs do Firebase
 #define FIREBASE_HOST "smart-fazenda-real.firebaseio.com"
 #define FIREBASE_AUTH "aQxXYLGyDzSobw2QDiw4xXB8p10UNPA8sTSKuQn1"
@@ -44,7 +47,7 @@ VL53L1X sensor;
 // ------------------------------
 // FILTRO MÉDIA MÓVEL
 
-#define n 10 //Número de pontos
+#define n 5 //Número de pontos
 
 int real, filtrado;
 int numbers[n];
@@ -118,7 +121,7 @@ void loop() {
   String tank1_level, system_power;
   
   //Dimensões do reservatório em mm
-  int R=145, r=130, h=330;
+  int R=145, r=130, h=337;
 
   //LIGANDO O SISTEMA
   system_power=Firebase.getString("system_power");
@@ -152,9 +155,9 @@ void loop() {
        
       
     //Exibindo informações no Serial Monitor do Arduino IDE
-    Serial.print("Distancia em mm: ");
-    Serial.println(alturamedia_caixa);
-    delay(10000);
+    Serial.print("Altura em mm: ");
+    Serial.println(alturaagua);
+    delay(5000);
   } else if (system_power=="Desligado") {
     Serial.println("Sistema desligado");
     delay(2000);

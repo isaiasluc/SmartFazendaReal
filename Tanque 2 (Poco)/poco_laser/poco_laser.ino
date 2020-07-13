@@ -69,11 +69,10 @@ float moving_average() {
 
 float distancia () {
   distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
-  float offset=20;
   while (!distanceSensor.checkForDataReady()) {
     delay(1);
   }
-  float distance = (distanceSensor.getDistance()+offset)/10; //Get the result of the measurement from the sensor
+  float distance = (distanceSensor.getDistance())/10; //Get the result of the measurement from the sensor
   distanceSensor.clearInterrupt();
   distanceSensor.stopRanging();
   
@@ -126,6 +125,7 @@ void loop() {
   unsigned long epochTime = timeClient.getEpochTime(); //Retorna o timestamp
   String formattedTime = timeClient.getFormattedTime();
 
+  void getData();
   float x,x2,x3;
   x=distancia();
   x3=x*x*x;

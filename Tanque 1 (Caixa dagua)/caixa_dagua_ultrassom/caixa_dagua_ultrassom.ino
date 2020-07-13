@@ -40,7 +40,7 @@ void publish(){
 // ------------------------------
 // FUNÇÃO DISTANCIA E FUNÇÃO QUE FILTRA A DISTÂNCIA
 
-#define n 10 //Número de pontos
+#define n 5 //Número de pontos
 
 float real, filtrado;
 float numbers[n];
@@ -73,7 +73,7 @@ digitalWrite(trigPin, LOW);
 duration = pulseIn(echoPin, HIGH);
 
 // Calculating the distance
-distance= duration*0.034/2;
+distance= (duration*0.034)/2;
 
 return distance;
 }
@@ -117,7 +117,7 @@ void loop() {
   String formattedTime = timeClient.getFormattedTime();
 
   float x,x2;
-  x=distancia();
+  x=(distancia()*10);
   x2=x*x;
 
   real = ((-0.0099145*x2)+(1.3416*x)-2.6411);
@@ -126,8 +126,8 @@ void loop() {
   float alturamedia_caixa, tank1_vol, alturaagua;
   String tank1_level, system_power;
   
-  //Dimensões do reservatório em cm
-  float R=14.5, r=13, h=32;
+  //Dimensões do reservatório em mm
+  float R=14, r=13, h=32;
 
   //LIGANDO O SISTEMA
   system_power=Firebase.getString("system_power");
@@ -137,7 +137,7 @@ void loop() {
     alturaagua=h-alturamedia_caixa;
     tank1_vol=(((3.1415*(alturaagua))*((R*R)+(R*r)+(r*r))/3)/100);
     
-      if (alturamedia_caixa > 25) {
+      if (alturamedia_caixa > 250) {
         Serial.println("Nivel do tanque 1: LOW");
         tank1_level = "LOW";
       } else {
@@ -157,10 +157,9 @@ void loop() {
       
     //Exibindo informações no Serial Monitor do Arduino IDE
     Serial.print("Distancia em cm: ");
-    Serial.println(alturamedia_caixa);
-    //Serial.print("Hora: ");
-    //Serial.println(formattedTime);
+    Serial.println(alturaagua);
     delay(10000);
+    
   } else if (system_power=="Desligado") {
     Serial.println("Sistema desligado");
     delay(2000);
