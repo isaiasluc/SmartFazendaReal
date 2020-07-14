@@ -2,6 +2,7 @@
 #include <FirebaseArduino.h> //Contém todas as funções que utilizaremos do Firebase
 #include <NTPClient.h> //Biblioteca necessária para obter data e hora
 #include <WiFiUdp.h> //Utiliza em conjunto com a NTPClient.h
+#include <Ticker.h>
 
 //Incluindo bibliotecas necessárias para o sensor laser VL53l1x
 #include <Wire.h>
@@ -29,6 +30,23 @@ JsonObject &root = jsonBuffer.createObject();
 
 //Iniciando um objeto VL53L1X chamado sensor
 VL53L1X sensor;
+
+//Iniciando um objeto Ticker para o Watchdog
+Ticker tick;
+
+//Criando uma variável volatile para o Watchdog
+volatile int watchdogCount = 0;
+
+//Função de alimentação do watchdog
+void ISRwatchdog() {
+  watchdogCount++;
+  if(watchdogCount == 5) {
+    Serial.println();
+    Serial.println("The watchdog bites!!!");
+    Serial.println("Reseting...");
+    ESP.reset();
+  }
+}
 
 //Definindo o pino D6 para o Rele
 const int rele = D6;
@@ -168,6 +186,11 @@ void enviaDados() {
       Firebase.setFloat("pocoAlturaAgua", pocoAlturaAgua);
       Firebase.push(TABLE_NAME, root);
 
+      if (Firebase.failed()){
+        Serial.println("Setting Number Failed...");
+        Serial.println(Firebase.error());
+      }
+
       Serial.println("Dados enviados com sucesso!");
       }
 }
@@ -175,9 +198,13 @@ void enviaDados() {
 void setup() {
   espInit();
   wifiInit();
+  tick.attach(2, ISRwatchdog);
 }
 
 void loop() {
+  Serial.print("Watchdog counter = ");
+  Serial.println(watchdogCount);
+  watchdogCount = 0;
   enviaDados();
-  delay(1000);
+  delay(2000);
 }
