@@ -3,6 +3,7 @@
 #include <NTPClient.h> //Biblioteca necessária para obter data e hora
 #include <WiFiUdp.h> //Utiliza em conjunto com a NTPClient.h
 #include <Ticker.h>
+#include <ArduinoJson.h>
 
 //Incluindo bibliotecas necessárias para o sensor laser VL53l1x
 #include <Wire.h>
@@ -136,8 +137,8 @@ int timeUpdate() {
 
 void enviaDados() {
   float pocoVol;
-  int pocoAlturaAgua, timestamp, pumpTemp;
-  String pocoLevel, system_power, tankStatus, pumpStatus;
+  int pocoAlturaAgua, timestamp, pumpTemp, pumpStatus, caixaLevel, pocoLevel;
+  String system_power;
   
   real = sensor.read();
   filtrado = moving_average();
@@ -155,23 +156,23 @@ void enviaDados() {
     pocoAlturaAgua=h-filtrado; //Altura da coluna de água
     pocoVol=(((3.1415*(pocoAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000); //Volume de água do poço
 
-    tankStatus = Firebase.getString("caixaLevel");
+    caixaLevel = Firebase.getInt("caixaLevel");
     
   //Mandando os dados coletados para o Firebase
-      if (tankStatus == "LOW") {
+      if (caixaLevel == 0 || caixaLevel == 1) { //caixaLevel Low
         digitalWrite (rele,LOW);
-        pumpStatus = "ON";
-      } else if (tankStatus == "FULL") {
+        pumpStatus = 1; //Bomba ligada
+      } else if (caixaLevel == 2) { //caixaLevel High
         digitalWrite (rele,HIGH);
-        pumpStatus = "OFF";
+        pumpStatus = 0; //Bomba desligada
       }
 
       if (pocoAlturaAgua > 250) {
-        pocoLevel = "HIGH";
+        pocoLevel = 2; //"HIGH";
       } else if (pocoAlturaAgua > 100 && pocoAlturaAgua < 250) {
-        pocoLevel = "OK";
+        pocoLevel = 1; //"OK";
       } else if (pocoAlturaAgua < 100) {
-        pocoLevel = "LOW";
+        pocoLevel = 0; //"LOW";
       }
       
       root["pocoAlturaAgua"] = pocoAlturaAgua;
@@ -182,8 +183,9 @@ void enviaDados() {
       root["timestamp"] = timestamp;
       root["system_power"] = system_power;
 
-      Firebase.setString("pocoLevel", pocoLevel);
+      Firebase.setInt("pocoLevel", pocoLevel);
       Firebase.setFloat("pocoAlturaAgua", pocoAlturaAgua);
+      
       Firebase.push(TABLE_NAME, root);
 
       if (Firebase.failed()){
@@ -198,13 +200,13 @@ void enviaDados() {
 void setup() {
   espInit();
   wifiInit();
-  tick.attach(2, ISRwatchdog);
+  //tick.attach(1, ISRwatchdog);
 }
 
 void loop() {
-  Serial.print("Watchdog counter = ");
-  Serial.println(watchdogCount);
-  watchdogCount = 0;
+  //Serial.print("Watchdog counter = ");
+  //Serial.println(watchdogCount);
+  //watchdogCount = 0;
   enviaDados();
-  delay(2000);
+  delay(10000);
 }

@@ -1,9 +1,19 @@
 (function (){
     // Inicia o Firebase
-    
-    var firebase = app_firebase;
+    var config = {
+      apiKey: "AIzaSyCKfz5qjYidlClPlXCf_X73YXKsRwJkUZo",
+      authDomain: "smart-fazenda-real.firebaseapp.com",
+      databaseURL: "https://smart-fazenda-real.firebaseio.com",
+      projectId: "smart-fazenda-real",
+      storageBucket: "smart-fazenda-real.appspot.com",
+      messagingSenderId: "813001947604",
+      appId: "1:813001947604:web:9a039b36884b9bc0bdbe41",
+      measurementId: "G-FCCWN7LQZB"
+    };
+    firebase.initializeApp(config);
+
     var db = firebase.database();
-  
+
     var dadosGlobaisT1 = [];
     var dadosGlobaisT2 = [];
     var timeGlobal = [];
@@ -12,7 +22,7 @@
     
 
     var refTanque1 = db.ref("Dados tanque 1 (Caixa d'agua)");
-    var refTanque2 = db.ref("Dados tanque 2 (Poco)");
+    var refTanque2 = db.ref("Dados tanque 2 (Poço)");
       
     function dataFormatada (time) {
       var date = new Date(time*1000);
@@ -22,20 +32,30 @@
   
     refTanque1.on('child_added', function(childSnapshot, prevChildKey) {
       let key = childSnapshot.val();
-      alturamedia_caixa = key['alturamedia_caixa'];
-      tank1_vol = key['tank1_vol'];
+      caixaAlturaAgua = key['caixaAlturaAgua'];
+      caixaVol = key['caixaVol'];
       time = key['time'];
-      tank1_level = key['tank1_level'];
+      caixaLevel = key['caixaLevel'];
       system_power = key['system_power'];
-      volT1.innerText = tank1_vol + "m3";
-      nivelT1.innerText = tank1_level;
+      volT1.innerText = caixaVol + "m3";
+      
+      if (caixaLevel == 0) {
+        nivelT1.innerText = 'Low';
+      } else if (caixaLevel == 1) {
+        nivelT1.innerText = 'Ok';
+      } else if (caixaLevel == 2) {
+        nivelT1.innerText = 'High';
+      }
+
+      cxaAlturaAgua.innerText = caixaAlturaAgua + 'mm';
+
       statusSist.innerText = system_power;
 
 
       dateFormatted = dataFormatada(time);
       
       if (dadosGlobaisT1.length < 60) {
-      dadosGlobaisT1.push(32-alturamedia_caixa);
+      dadosGlobaisT1.push(32-caixaAlturaAgua);
       timeGlobal.push(dateFormatted);
       } else {
         dadosGlobaisT1.shift();
@@ -45,12 +65,12 @@
     });
     
     
-    var alturaT1 = db.ref("alturamedia_caixa");
+    var alturaT1 = db.ref("caixaAlturaAgua");
     alturaT1.on('value', function(snapshot) {
       distT1.push(snapshot.val());
     });
     
-    var alturaT2 = db.ref("alturamedia_poco");
+    var alturaT2 = db.ref("pocoAlturaAgua");
     alturaT2.on('value', function(snapshot) {
       distT2.push(snapshot.val());
     });
@@ -59,22 +79,32 @@
     
     refTanque2.on('child_added', function(childSnapshot, prevChildKey) {
       let key = childSnapshot.val();
-      alturamedia_poco = key['alturamedia_poco'];
-      tank2_vol = key['tank2_vol'];
+      pocoAlturaAgua = key['pocoAlturaAgua'];
+      pocoVol = key['pocoVol'];
       time = key['time'];
-      tank2_level = key['tank2_level'];
+      pocoLevel = key['pocoLevel'];
       system_power = key['system_power'];
       temp_bomba = key['temp_bomba'];
-      status_bomba = key['status_bomba']
-      volT2.innerText = tank2_vol + "m3";
-      nivelT2.innerText = tank2_level;
+      pumpStatus = key['pumpStatus']
+      volT2.innerText = pocoVol + "m3";
+
+      if (pocoLevel == 0) {
+        nivelT2.innerText = 'Low';
+      } else if (pocoLevel == 1) {
+        nivelT2.innerText = 'Ok';
+      } else if (pocoLevel == 2) {
+        nivelT2.innerText = 'High';
+      }
+      
+      pcoAlturaAgua.innerText = pocoAlturaAgua + 'mm';
+
       tempBomba.innerText = temp_bomba;
       statusSist.innerText = system_power;
 
       dateFormatted = dataFormatada(time);
       
       if (dadosGlobaisT2.length < 60) {
-      dadosGlobaisT2.push(32-alturamedia_poco);
+      dadosGlobaisT2.push(32-pocoAlturaAgua);
       timeGlobal.push(dateFormatted);
       } else {
         dadosGlobaisT2.shift();

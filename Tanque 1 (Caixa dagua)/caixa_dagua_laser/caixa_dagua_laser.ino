@@ -131,8 +131,8 @@ int timeUpdate() {
 
 void enviaDados() {
   float caixaVol;
-  int caixaAlturaAgua, timestamp;
-  String caixaLevel, system_power;
+  int caixaAlturaAgua, timestamp, caixaLevel;
+  String system_power;
   
   real = sensor.read();
   filtrado = moving_average();
@@ -152,11 +152,11 @@ void enviaDados() {
   
   //Mandando os dados coletados para o Firebase
       if (caixaAlturaAgua > 250) {
-        caixaLevel = "HIGH";
+        caixaLevel = 2; //High
       } else if (caixaAlturaAgua > 100 && caixaAlturaAgua < 250) {
-        caixaLevel = "OK";
+        caixaLevel = 1; //Ok
       } else if (caixaAlturaAgua < 100) {
-        caixaLevel = "LOW";
+        caixaLevel = 0; //Low
       }
       
       root["caixaAlturaAgua"] = caixaAlturaAgua;
@@ -165,8 +165,9 @@ void enviaDados() {
       root["timestamp"] = timestamp;
       root["system_power"] = system_power;
 
-      Firebase.setString("caixaLevel", caixaLevel);
+      Firebase.setInt("caixaLevel", caixaLevel);
       Firebase.setFloat("caixaAlturaAgua", caixaAlturaAgua);
+      
       Firebase.push(TABLE_NAME, root);
 
       if (Firebase.failed()){
@@ -181,13 +182,13 @@ void enviaDados() {
 void setup() {
   espInit();
   wifiInit();
-  tick.attach(1, ISRwatchdog);
+  //tick.attach(1, ISRwatchdog);
 }
 
 void loop() {
-  Serial.print("Watchdog counter = ");
-  Serial.println(watchdogCount);
-  watchdogCount = 0;
+  //Serial.print("Watchdog counter = ");
+  //Serial.println(watchdogCount);
+  //watchdogCount = 0;
   enviaDados();
-  delay(1000);
+  delay(10000);
 }
