@@ -2,7 +2,6 @@
 #include <FirebaseArduino.h> //Contém todas as funções que utilizaremos do Firebase
 #include <NTPClient.h> //Biblioteca necessária para obter data e hora
 #include <WiFiUdp.h> //Utiliza em conjunto com a NTPClient.h
-#include <Ticker.h>
 #include <ArduinoJson.h>
 
 //Incluindo bibliotecas necessárias para o sensor laser VL53l1x
@@ -19,7 +18,7 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br", -3 * 3600);
 #define TABLE_NAME "Dados tanque 2 (Poço)"
 
 //Configuraçõs do WiFi
-#define WIFI_SSID "William_2.4GHZ" //Nome da Wifi
+#define WIFI_SSID "William" //Nome da Wifi
 #define WIFI_PASSWORD "camaleao" //Senha da Wifi
 
 //----------------------------------------------------------------------------------------
@@ -31,23 +30,6 @@ JsonObject &root = jsonBuffer.createObject();
 
 //Iniciando um objeto VL53L1X chamado sensor
 VL53L1X sensor;
-
-//Iniciando um objeto Ticker para o Watchdog
-Ticker tick;
-
-//Criando uma variável volatile para o Watchdog
-volatile int watchdogCount = 0;
-
-//Função de alimentação do watchdog
-void ISRwatchdog() {
-  watchdogCount++;
-  if(watchdogCount == 5) {
-    Serial.println();
-    Serial.println("The watchdog bites!!!");
-    Serial.println("Reseting...");
-    ESP.reset();
-  }
-}
 
 //Definindo o pino D6 para o Rele
 const int rele = D6;
@@ -82,7 +64,7 @@ void espInit() {
   pinMode(rele, OUTPUT);
   digitalWrite(rele, HIGH);
   delay(1000);
-  
+  /*
   //Iniciando sensor
   sensor.setTimeout(1000);
   if (!sensor.init()) {
@@ -92,7 +74,7 @@ void espInit() {
   sensor.setDistanceMode(VL53L1X::Long);
   sensor.setMeasurementTimingBudget(50000);
   sensor.startContinuous(1000);
-  
+  */
   //Iniciando instância do NTP timeClient
   //timeClient.setTimeOffset(0); //Offset do NTP Client (-10800 para GTM -3:00hrs)
   timeClient.begin(); //Inicia o NTP Client
@@ -140,8 +122,8 @@ void enviaDados() {
   int pocoAlturaAgua, timestamp, pumpTemp, pumpStatus, caixaLevel, pocoLevel;
   String system_power;
   
-  real = sensor.read();
-  filtrado = moving_average();
+  //real = sensor.read();
+  //filtrado = moving_average();
   timestamp = timeUpdate();
 
   //Dimensões do reservatório em mm
@@ -159,7 +141,7 @@ void enviaDados() {
     caixaLevel = Firebase.getInt("caixaLevel");
     
   //Mandando os dados coletados para o Firebase
-      if (caixaLevel == 0 || caixaLevel == 1) { //caixaLevel Low
+      if (caixaLevel == 0) { //caixaLevel Low
         digitalWrite (rele,LOW);
         pumpStatus = 1; //Bomba ligada
       } else if (caixaLevel == 2) { //caixaLevel High
@@ -167,11 +149,11 @@ void enviaDados() {
         pumpStatus = 0; //Bomba desligada
       }
 
-      if (pocoAlturaAgua > 250) {
+      if (pocoAlturaAgua >= 110) {
         pocoLevel = 2; //"HIGH";
-      } else if (pocoAlturaAgua > 100 && pocoAlturaAgua < 250) {
+      } else if (pocoAlturaAgua >= 50 && pocoAlturaAgua < 110) {
         pocoLevel = 1; //"OK";
-      } else if (pocoAlturaAgua < 100) {
+      } else if (pocoAlturaAgua < 50) {
         pocoLevel = 0; //"LOW";
       }
       
@@ -185,6 +167,7 @@ void enviaDados() {
 
       Firebase.setInt("pocoLevel", pocoLevel);
       Firebase.setFloat("pocoAlturaAgua", pocoAlturaAgua);
+      Firebase.setInt("pumpStatus", pumpStatus);
       
       Firebase.push(TABLE_NAME, root);
 
@@ -200,13 +183,9 @@ void enviaDados() {
 void setup() {
   espInit();
   wifiInit();
-  //tick.attach(1, ISRwatchdog);
 }
 
 void loop() {
-  //Serial.print("Watchdog counter = ");
-  //Serial.println(watchdogCount);
-  //watchdogCount = 0;
   enviaDados();
-  delay(10000);
+  delay(5000);
 }

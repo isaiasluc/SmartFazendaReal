@@ -1,6 +1,5 @@
 #include <ESP8266WiFi.h> //Conexão WiFi do ESP8266
 #include <FirebaseArduino.h> //Contém todas as funções que utilizaremos do Firebase
-#include <Ticker.h> //Biblioteca para usar os timers
 #include <NTPClient.h> //Biblioteca necessária para obter data e hora
 #include <WiFiUdp.h> //Utiliza em conjunto com a NTPClient.h
 
@@ -27,10 +26,6 @@ StaticJsonBuffer<200> jsonBuffer;
 JsonObject &root = jsonBuffer.createObject();
 // -------------------------------------------
 
-// DEFININDO TICKER DE ATUALIZAÇÃO
-// -------------------------------
-Ticker tick;
-
 
 // ------------------------------
 // FUNÇÃO DISTANCIA E FUNÇÃO QUE FILTRA A DISTÂNCIA
@@ -52,7 +47,7 @@ float moving_average() {
   return (acc/n);
 }
 
-float distancia () {
+float distancia () { //*10 para retornar o valor em mm
   float distance;
   long duration;
   // Clears the trigPin
@@ -72,6 +67,7 @@ distance= (duration*0.034)/2;
 
 return (distance*10);
 }
+
 // ------------------------------
 void espInit() {
   //Iniciando comunicação serial
@@ -125,11 +121,12 @@ void enviaDados() {
   int timestamp, caixaLevel;
   String system_power;
 
-  float x,x2;
+  /*float x,x2;
   x=(distancia());
   x2=x*x;
 
-  real = ((-0.0099145*x2)+(1.3416*x)-2.6411);
+  real = ((-0.0099145*x2)+(1.3416*x)-2.6411);*/
+  real = distancia();
   filtrado = moving_average();
 
   //Dimensões do reservatório em mm
@@ -145,11 +142,11 @@ void enviaDados() {
     caixaVol=(((3.1415*(caixaAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000);
 
     //Mandando os dados coletados para o Firebase
-      if (caixaAlturaAgua > 250) {
+      if (caixaAlturaAgua >= 110) {
         caixaLevel = 2; //High
-      } else if (caixaAlturaAgua > 100 && caixaAlturaAgua < 250) {
+      } else if (caixaAlturaAgua >= 50 && caixaAlturaAgua < 110) {
         caixaLevel = 1; //Ok
-      } else if (caixaAlturaAgua < 100) {
+      } else if (caixaAlturaAgua < 50) {
         caixaLevel = 0; //Low
       }
       
@@ -170,6 +167,8 @@ void enviaDados() {
       }
       
       Serial.println("Dados enviados com sucesso!");
+      Serial.print("caixaAlturaAgua = ");
+      Serial.println(caixaAlturaAgua);
       }
  }
 
@@ -181,5 +180,5 @@ void setup() {
 
 void loop() {
   enviaDados();
-  delay(10000);
+  delay(5000);
 }

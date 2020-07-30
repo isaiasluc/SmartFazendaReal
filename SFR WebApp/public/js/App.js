@@ -25,7 +25,7 @@
     var refTanque2 = db.ref("Dados tanque 2 (Poço)");
       
     function dataFormatada (time) {
-      var date = new Date(time*1000);
+      var date = new Date(time);
       var localeSpecificTime = date.toTimeString();
       return localeSpecificTime.replace(/:\d+ /, ' ');
     }
@@ -34,7 +34,7 @@
       let key = childSnapshot.val();
       caixaAlturaAgua = key['caixaAlturaAgua'];
       caixaVol = key['caixaVol'];
-      time = key['time'];
+      time = key['timestamp'];
       caixaLevel = key['caixaLevel'];
       system_power = key['system_power'];
       volT1.innerText = caixaVol + "m3";
@@ -55,7 +55,7 @@
       dateFormatted = dataFormatada(time);
       
       if (dadosGlobaisT1.length < 60) {
-      dadosGlobaisT1.push(32-caixaAlturaAgua);
+      dadosGlobaisT1.push(caixaAlturaAgua);
       timeGlobal.push(dateFormatted);
       } else {
         dadosGlobaisT1.shift();
@@ -81,7 +81,7 @@
       let key = childSnapshot.val();
       pocoAlturaAgua = key['pocoAlturaAgua'];
       pocoVol = key['pocoVol'];
-      time = key['time'];
+      time = key['timestamp'];
       pocoLevel = key['pocoLevel'];
       system_power = key['system_power'];
       temp_bomba = key['temp_bomba'];
@@ -98,13 +98,18 @@
       
       pcoAlturaAgua.innerText = pocoAlturaAgua + 'mm';
 
-      tempBomba.innerText = temp_bomba;
+      //tempBomba.innerText = temp_bomba;
       statusSist.innerText = system_power;
+      if (pumpStatus == 1) {
+        bombStatus.innerText = 'On';
+      } else if (pumpStatus == 0) {
+        bombStatus.innerText = 'Off';
+      }
 
       dateFormatted = dataFormatada(time);
       
       if (dadosGlobaisT2.length < 60) {
-      dadosGlobaisT2.push(32-pocoAlturaAgua);
+      dadosGlobaisT2.push(pocoAlturaAgua);
       timeGlobal.push(dateFormatted);
       } else {
         dadosGlobaisT2.shift();

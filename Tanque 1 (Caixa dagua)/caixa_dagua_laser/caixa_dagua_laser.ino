@@ -18,7 +18,7 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br", -3 * 3600);
 #define TABLE_NAME "Dados tanque 1 (Caixa d'agua)"
 
 //Configuraçõs do WiFi
-#define WIFI_SSID "William_2.4GHZ" //Nome da Wifi
+#define WIFI_SSID "William" //Nome da Wifi
 #define WIFI_PASSWORD "camaleao" //Senha da Wifi
 
 //----------------------------------------------------------------------------------------
