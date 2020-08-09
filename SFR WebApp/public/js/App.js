@@ -47,7 +47,7 @@
         nivelT1.innerText = 'High';
       }
 
-      cxaAlturaAgua.innerText = caixaAlturaAgua + 'mm';
+      cxaAlturaAgua.innerText = caixaAlturaAgua + 'cm';
 
       statusSist.innerText = system_power;
 
@@ -96,7 +96,7 @@
         nivelT2.innerText = 'High';
       }
       
-      pcoAlturaAgua.innerText = pocoAlturaAgua + 'mm';
+      pcoAlturaAgua.innerText = pocoAlturaAgua + 'cm';
 
       //tempBomba.innerText = temp_bomba;
       statusSist.innerText = system_power;

@@ -13,8 +13,11 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 #define TABLE_NAME "Dados tanque 1 (Caixa d'agua)"
 
 //Configuraçõs do WiFi
-#define WIFI_SSID "William" //Nome da Wifi
-#define WIFI_PASSWORD "camaleao" //Senha da Wifi
+//#define WIFI_SSID "William" //Nome da Wifi
+//#define WIFI_PASSWORD "camaleao" //Senha da Wifi
+
+#define WIFI_SSID "ESTABULO COZINHA" //Nome da Wifi
+#define WIFI_PASSWORD "A1b2c3d4e5" //Senha da Wifi
 
 //Definindo pinos para trigger e echo do sensor HCSR04 (Ultrassom)
 #define trigPin D4
@@ -65,7 +68,7 @@ duration = pulseIn(echoPin, HIGH);
 // Calculating the distance
 distance= (duration*0.034)/2;
 
-return (distance*10);
+return (distance);
 }
 
 // ------------------------------
@@ -129,8 +132,8 @@ void enviaDados() {
   real = distancia();
   filtrado = moving_average();
 
-  //Dimensões do reservatório em mm
-  float R=140, r=130, h=320;
+  //Dimensões do reservatório em cm
+  float R=14, r=13, h=48;
 
   //LIGANDO O SISTEMA
   system_power=Firebase.getString("system_power");
@@ -142,11 +145,11 @@ void enviaDados() {
     caixaVol=(((3.1415*(caixaAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000);
 
     //Mandando os dados coletados para o Firebase
-      if (caixaAlturaAgua >= 110) {
+      if (caixaAlturaAgua >= 35) {
         caixaLevel = 2; //High
-      } else if (caixaAlturaAgua >= 50 && caixaAlturaAgua < 110) {
+      } else if (caixaAlturaAgua >= 10 && caixaAlturaAgua < 35) {
         caixaLevel = 1; //Ok
-      } else if (caixaAlturaAgua < 50) {
+      } else if (caixaAlturaAgua < 10) {
         caixaLevel = 0; //Low
       }
       

@@ -1,6 +1,5 @@
 #include <ESP8266WiFi.h> //Conexão WiFi do ESP8266
 #include <FirebaseArduino.h> //Contém todas as funções que utilizaremos do Firebase
-#include <Ticker.h> //Biblioteca para usar os timers
 #include <NTPClient.h> //Biblioteca necessária para obter data e hora
 #include <WiFiUdp.h> //Utiliza em conjunto com a NTPClient.h
 
@@ -14,8 +13,8 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 #define TABLE_NAME "Dados tanque 2 (Poco)"
 
 //Configuraçõs do WiFi
-#define WIFI_SSID "William_2.4GHZ" //Nome da Wifi
-#define WIFI_PASSWORD "camaleao" //Senha da Wifi
+#define WIFI_SSID "ESTABULO COZINHA" //Nome da Wifi
+#define WIFI_PASSWORD "A1b2c3d4e5" //Senha da Wifi
 
 //Definindo pinos para trigger e echo do sensor HCSR04 (Ultrassom)
 #define trigPin D4
@@ -27,20 +26,11 @@ StaticJsonBuffer<200> jsonBuffer;
 JsonObject &root = jsonBuffer.createObject();
 // -------------------------------------------
 
-// DEFININDO TICKER DE ATUALIZAÇÃO
-// -------------------------------
-Ticker ticker;
-bool publishNewState = true;
-
-void publish(){
-  publishNewState = true;
-}
-#define PUBLISH_INTERVAL 1000*60*0.166
 
 // ------------------------------
 // FUNÇÃO DISTANCIA E FUNÇÃO QUE FILTRA A DISTÂNCIA
 
-#define n 10 //Número de pontos
+#define n 5 //Número de pontos
 
 float real, filtrado;
 float numbers[n];
@@ -57,7 +47,7 @@ float moving_average() {
   return (acc/n);
 }
 
-float distancia () {
+float distancia () { //*10 para retornar o valor em mm
   float distance;
   long duration;
   // Clears the trigPin
@@ -73,15 +63,17 @@ digitalWrite(trigPin, LOW);
 duration = pulseIn(echoPin, HIGH);
 
 // Calculating the distance
-distance= duration*0.034/2;
+distance= (duration*0.034)/2;
 
-return distance;
+return (distance);
 }
+
 // ------------------------------
 
 const int rele = D6;
 
-void setup() {
+// ------------------------------
+void espInit() {
   //Iniciando comunicação serial
   Serial.begin(115200);
   delay(1000);
@@ -89,6 +81,12 @@ void setup() {
   pinMode(echoPin, INPUT); //Seta o echoPin como Input (entrada)
   pinMode(rele, OUTPUT);
   digitalWrite(rele, HIGH);
+  
+  //timeClient.setTimeOffset(0); //Offset do NTP Client (-10800 para GTM -3:00hrs)
+  timeClient.begin(); //Inicia o NTP Client
+}
+
+void wifiInit() {
   //Iniciando conexão WiFi
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Conectando com ");
@@ -105,83 +103,101 @@ void setup() {
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   WiFi.mode(WIFI_STA);
 
-  timeClient.setTimeOffset(0); //Offset do NTP Client (-10800 para GTM -3:00hrs)
-  timeClient.begin(); //Inicia o NTP Client
-
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH); //Inicia uma instância do Firebase
   Firebase.setString("system_power", "Desligado"); //Seta o estado inicial do sistema para Desligado
-
-  //Registrando o Ticker para publicar de tempos em tempos
-  ticker.attach_ms(PUBLISH_INTERVAL, publish); 
+  Serial.println("Iniciada instância do Firebase");
+  Serial.println("Setando estado inicial do sistema para Desligado");
 }
 
-void loop() {
+//----------------------------------------------------------------------------------------
+
+//FUNÇÃO PARA ATUALIZAR DATA E HORA
+
+int timeUpdate() {
   timeClient.update();
   unsigned long epochTime = timeClient.getEpochTime(); //Retorna o timestamp
-  String formattedTime = timeClient.getFormattedTime();
+  //String formattedTime = timeClient.getFormattedTime(); //Retorna hora formatada
+  
+  return epochTime;
+}
+//----------------------------------------------------------------------------------------
 
-  float x,x2;
-  x=distancia();
-  x2=x*x;
+void enviaDados() {
+  float pocoVol, pocoAlturaAgua;
+  int timestamp, pocoLevel, temp_bomba, bombStatus, caixaStatus;
+  String system_power;
 
-  real = ((-0.00053187*x2)+(1.0178*x)-0.65671);
+  real = distancia();
   filtrado = moving_average();
 
-  float alturamedia_poco, tank2_vol, alturaagua;
-  int temp_bomba;
-  String tank2_level, system_power, tank1Status, status_bomba;
-
   //Dimensões do poco em cm
-  float R=14.5, r=13, h=32;
+  float R=140, r=130, h=48;
 
   //LIGANDO SISTEMA
   system_power=Firebase.getString("system_power");
-  
-  if (system_power=="Ligado") {
-    alturamedia_poco=filtrado;
-    alturaagua=h-alturamedia_poco;
-    tank2_vol=(((3.1415*(alturaagua))*((R*R)+(R*r)+(r*r))/3)/100);
-    
-    tank1Status = Firebase.getString("tank1_level");
-    
-    // Apenas publique quando passar o tempo determinado
-    if  (publishNewState){
-      Serial.println("Publish new State");
+
+  if (system_power == "Desligado") {
+    Serial.println("Sistema desligado");
+    digitalWrite (rele,HIGH);
+  } else if (system_power == "Ligado") {
+    pocoAlturaAgua=h-filtrado;
+    pocoVol=(((3.1415*(pocoAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000);
+
+
+      if (pocoAlturaAgua >= 110) {
+        pocoLevel = 2; //High
+      } else if (pocoAlturaAgua >= 50 && pocoAlturaAgua < 110) {
+        pocoLevel = 1; //Ok
+      } else if (pocoAlturaAgua < 50) {
+        pocoLevel = 0; //Low
+      }
+
+    //Pegando o status da caixa d'agua
+
+    caixaStatus = Firebase.getInt("caixaLevel");
+
     // Mandando para o firebase
-      if (tank1Status == "LOW") {
-        digitalWrite (rele,LOW);
-        status_bomba="ON";
+      if (caixaStatus == 0) {
+        digitalWrite (rele,LOW); //LIGA A BOMBA CASO O NIVEL DA CAIXA ESTEJA BAIXO
+        bombStatus=1; //LIGA A BOMBA COM 1
         Serial.println("BOMBA LIGADA");
-      } else if (tank1Status == "FULL") {
-        digitalWrite (rele,HIGH);
-        status_bomba="OFF";
+      } else if (caixaStatus == 2) {
+        digitalWrite (rele,HIGH); //DESLIGA A BOMBA CASO O NIVEL DA CAIXA ESTEJA ALTO
+        bombStatus=0; //DESLIGA A BOMBA COM 0
         Serial.println("BOMBA DESLIGADA");
       }
-      publishNewState = false;
-      
-      root["alturamedia_poco"] = alturamedia_poco;
-      root["status_bomba"] = status_bomba;
-      root["temp_bomba"] = temp_bomba;
-      root["tank2_level"] = tank2_level;
-      root["tank2_vol"] = tank2_vol;
-      root["time"] = epochTime;
-      root["system_power"] = system_power;
 
-      Firebase.setString("tank2_level", tank2_level);
-      Firebase.setFloat("alturamedia_poco", alturamedia_poco);
-      Firebase.push(TABLE_NAME, root);
 
-    } else {
-      Serial.println("Erro ao publicar estado");
+    root["pocoAlturaAgua"] = pocoAlturaAgua;
+    root["bombStatus"] = bombStatus;
+    root["temp_bomba"] = temp_bomba;
+    root["pocoLevel"] = pocoLevel;
+    root["pocoVol"] = pocoVol;
+    root["timestamp"] = timestamp;
+    root["system_power"] = system_power;
+
+    Firebase.setInt("pocoLevel", pocoLevel);
+    Firebase.setFloat("pocoAlturaAgua", pocoAlturaAgua);
+
+    Firebase.push(TABLE_NAME, root);
+
+    if (Firebase.failed()){
+        Serial.println("Setting Number Failed...");
+        Serial.println(Firebase.error());
     }
-    //Exibindo informações no Serial Monitor do Arduino IDE
-    Serial.print("Distancia em cm: ");
-    Serial.println(alturamedia_poco);
-    Serial.print("Hora: ");
-    Serial.println(formattedTime);
-    delay(10000);
-    } else if (system_power=="Desligado") {
-      Serial.println("Sistema desligado");
-      delay(2000);
-    }
+
+    Serial.println("Dados enviados com sucesso!");
+    Serial.print("pocoAlturaAgua = ");
+    Serial.println(pocoAlturaAgua);
+  }
+}
+
+void setup() {
+  espInit();
+  wifiInit();
+}
+
+void loop() {
+  enviaDados();
+  delay(5000);
 }
