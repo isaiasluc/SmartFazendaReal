@@ -124,14 +124,14 @@ int timeUpdate() {
 
 void enviaDados() {
   float pocoVol, pocoAlturaAgua;
-  int timestamp, pocoLevel, temp_bomba, bombStatus, caixaStatus;
+  int timestamp, pocoLevel, temp_bomba, pumpStatus, caixaStatus;
   String system_power;
 
   real = distancia();
   filtrado = moving_average();
 
   //Dimensões do poco em cm
-  float R=140, r=130, h=48;
+  float R=14, r=13, h=48;
 
   //LIGANDO SISTEMA
   system_power=Firebase.getString("system_power");
@@ -157,19 +157,19 @@ void enviaDados() {
     caixaStatus = Firebase.getInt("caixaLevel");
 
     // Mandando para o firebase
-      if (caixaStatus == 0) {
+      if (caixaStatus == 0 || caixaStatus == 1) {
         digitalWrite (rele,LOW); //LIGA A BOMBA CASO O NIVEL DA CAIXA ESTEJA BAIXO
-        bombStatus=1; //LIGA A BOMBA COM 1
+        pumpStatus=1; //LIGA A BOMBA COM 1
         Serial.println("BOMBA LIGADA");
       } else if (caixaStatus == 2) {
         digitalWrite (rele,HIGH); //DESLIGA A BOMBA CASO O NIVEL DA CAIXA ESTEJA ALTO
-        bombStatus=0; //DESLIGA A BOMBA COM 0
+        pumpStatus=0; //DESLIGA A BOMBA COM 0
         Serial.println("BOMBA DESLIGADA");
       }
 
 
     root["pocoAlturaAgua"] = pocoAlturaAgua;
-    root["bombStatus"] = bombStatus;
+    root["pumpStatus"] = pumpStatus;
     root["temp_bomba"] = temp_bomba;
     root["pocoLevel"] = pocoLevel;
     root["pocoVol"] = pocoVol;
@@ -189,6 +189,7 @@ void enviaDados() {
     Serial.println("Dados enviados com sucesso!");
     Serial.print("pocoAlturaAgua = ");
     Serial.println(pocoAlturaAgua);
+    Serial.println(rele);
   }
 }
 

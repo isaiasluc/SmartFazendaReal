@@ -16,7 +16,7 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 //#define WIFI_SSID "William" //Nome da Wifi
 //#define WIFI_PASSWORD "camaleao" //Senha da Wifi
 
-#define WIFI_SSID "ESTABULO COZINHA" //Nome da Wifi
+#define WIFI_SSID "ESTABULO COZINHA_Ext" //Nome da Wifi
 #define WIFI_PASSWORD "A1b2c3d4e5" //Senha da Wifi
 
 //Definindo pinos para trigger e echo do sensor HCSR04 (Ultrassom)
