@@ -20,6 +20,10 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 #define trigPin D4
 #define echoPin D5
 
+//Definindo pinos dos leds
+#define ledGreen D2
+#define ledRed D3
+
 // CRIANDO OBJETO JSON PARA ENVIAR DADOS AO FIREBASE
 // -------------------------------------------
 StaticJsonBuffer<200> jsonBuffer;
@@ -81,6 +85,8 @@ void espInit() {
   pinMode(echoPin, INPUT); //Seta o echoPin como Input (entrada)
   pinMode(rele, OUTPUT);
   digitalWrite(rele, HIGH);
+  pinMode(ledGreen, OUTPUT); //Led verde para sinalizar ON
+  pinMode(ledRed, OUTPUT); //Led vermelho para sinalizar OFF
   
   //timeClient.setTimeOffset(0); //Offset do NTP Client (-10800 para GTM -3:00hrs)
   timeClient.begin(); //Inicia o NTP Client
@@ -131,7 +137,7 @@ void enviaDados() {
   filtrado = moving_average();
 
   //Dimensões do poco em cm
-  float R=14, r=13, h=48;
+  float R=14, r=13, h=145;
 
   //LIGANDO SISTEMA
   system_power=Firebase.getString("system_power");
@@ -139,16 +145,22 @@ void enviaDados() {
   if (system_power == "Desligado") {
     Serial.println("Sistema desligado");
     digitalWrite (rele,HIGH);
+    digitalWrite(ledRed, HIGH); //Led vermelho sinalizando sistema OFF
+    digitalWrite(ledGreen, LOW);
+    
   } else if (system_power == "Ligado") {
+    digitalWrite(ledRed, LOW);
+    digitalWrite(ledGreen, HIGH);
+    
     pocoAlturaAgua=h-filtrado;
     pocoVol=(((3.1415*(pocoAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000);
 
 
       if (pocoAlturaAgua >= 110) {
         pocoLevel = 2; //High
-      } else if (pocoAlturaAgua >= 50 && pocoAlturaAgua < 110) {
+      } else if (pocoAlturaAgua >= 70 && pocoAlturaAgua < 110) {
         pocoLevel = 1; //Ok
-      } else if (pocoAlturaAgua < 50) {
+      } else if (pocoAlturaAgua < 70) {
         pocoLevel = 0; //Low
       }
 
@@ -157,7 +169,7 @@ void enviaDados() {
     caixaStatus = Firebase.getInt("caixaLevel");
 
     // Mandando para o firebase
-      if (caixaStatus == 0 || caixaStatus == 1) {
+      if (caixaStatus == 0 && pocoLevel != 0) { //  || caixaStatus == ----- So liga a bomba quando o nível de água está abaixo de 10cm
         digitalWrite (rele,LOW); //LIGA A BOMBA CASO O NIVEL DA CAIXA ESTEJA BAIXO
         pumpStatus=1; //LIGA A BOMBA COM 1
         Serial.println("BOMBA LIGADA");
@@ -189,7 +201,6 @@ void enviaDados() {
     Serial.println("Dados enviados com sucesso!");
     Serial.print("pocoAlturaAgua = ");
     Serial.println(pocoAlturaAgua);
-    Serial.println(rele);
   }
 }
 

@@ -16,12 +16,16 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 //#define WIFI_SSID "William" //Nome da Wifi
 //#define WIFI_PASSWORD "camaleao" //Senha da Wifi
 
-#define WIFI_SSID "ESTABULO COZINHA_Ext" //Nome da Wifi
+#define WIFI_SSID "ESTABULO COZINHA" //Nome da Wifi
 #define WIFI_PASSWORD "A1b2c3d4e5" //Senha da Wifi
 
 //Definindo pinos para trigger e echo do sensor HCSR04 (Ultrassom)
 #define trigPin D4
 #define echoPin D5
+
+//Definindo pinos dos leds
+#define ledGreen D2
+#define ledRed D3
 
 // CRIANDO OBJETO JSON PARA ENVIAR DADOS AO FIREBASE
 // -------------------------------------------
@@ -78,6 +82,8 @@ void espInit() {
   delay(1000);
   pinMode(trigPin, OUTPUT); //Seta o trigPin como Output (saída)
   pinMode(echoPin, INPUT); //Seta o echoPin como Input (entrada)
+  pinMode(ledGreen, OUTPUT); //Led verde para sinalizar ON
+  pinMode(ledRed, OUTPUT); //Led vermelho para sinalizar OFF
   
   //timeClient.setTimeOffset(0); //Offset do NTP Client (-10800 para GTM -3:00hrs)
   timeClient.begin(); //Inicia o NTP Client
@@ -128,7 +134,7 @@ void enviaDados() {
   x=(distancia());
   x2=x*x;
 
-  real = ((-0.0099145*x2)+(1.3416*x)-2.6411);*/
+  real = ((-0.0099145*x2)+(1.3416*x)-2.64112);*/
   real = distancia();
   filtrado = moving_average();
 
@@ -140,7 +146,13 @@ void enviaDados() {
 
    if (system_power == "Desligado") {
     Serial.println("Sistema desligado");
+    digitalWrite(ledRed, HIGH);
+    digitalWrite(ledGreen, LOW);
+    
   } else if (system_power == "Ligado") {
+    digitalWrite(ledRed, LOW);
+    digitalWrite(ledGreen, HIGH);
+    
     caixaAlturaAgua=h-filtrado;
     caixaVol=(((3.1415*(caixaAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000);
 
