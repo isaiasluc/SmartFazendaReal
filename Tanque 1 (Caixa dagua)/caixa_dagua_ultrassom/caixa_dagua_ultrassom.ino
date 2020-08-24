@@ -152,9 +152,10 @@ void enviaDados() {
   } else if (system_power == "Ligado") {
     digitalWrite(ledRed, LOW);
     digitalWrite(ledGreen, HIGH);
-    
-    caixaAlturaAgua=h-filtrado;
-    caixaVol=(((3.1415*(caixaAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000);
+
+    timestamp = timeUpdate();
+    caixaAlturaAgua = h-filtrado;
+    caixaVol = (((3.1415*(caixaAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000);
 
     //Mandando os dados coletados para o Firebase
       if (caixaAlturaAgua >= 35) {

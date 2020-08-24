@@ -22,7 +22,7 @@
     
 
     var refTanque1 = db.ref("Dados tanque 1 (Caixa d'agua)");
-    var refTanque2 = db.ref("Dados tanque 2 (Poço)");
+    var refTanque2 = db.ref("Dados tanque 2 (Poco)");
       
     function dataFormatada (time) {
       var date = new Date(time);

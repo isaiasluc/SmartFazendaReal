@@ -151,9 +151,10 @@ void enviaDados() {
   } else if (system_power == "Ligado") {
     digitalWrite(ledRed, LOW);
     digitalWrite(ledGreen, HIGH);
-    
-    pocoAlturaAgua=h-filtrado;
-    pocoVol=(((3.1415*(pocoAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000);
+
+    timestamp = timeUpdate();
+    pocoAlturaAgua = h-filtrado;
+    pocoVol = (((3.1415*(pocoAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000);
 
 
       if (pocoAlturaAgua >= 110) {
@@ -170,12 +171,12 @@ void enviaDados() {
 
     // Mandando para o firebase
       if (caixaStatus == 0 && pocoLevel != 0) { //  || caixaStatus == ----- So liga a bomba quando o nível de água está abaixo de 10cm
-        digitalWrite (rele,LOW); //LIGA A BOMBA CASO O NIVEL DA CAIXA ESTEJA BAIXO
         pumpStatus=1; //LIGA A BOMBA COM 1
+        digitalWrite (rele,LOW); //LIGA A BOMBA CASO O NIVEL DA CAIXA ESTEJA BAIXO
         Serial.println("BOMBA LIGADA");
       } else if (caixaStatus == 2) {
-        digitalWrite (rele,HIGH); //DESLIGA A BOMBA CASO O NIVEL DA CAIXA ESTEJA ALTO
         pumpStatus=0; //DESLIGA A BOMBA COM 0
+        digitalWrite (rele,HIGH); //DESLIGA A BOMBA CASO O NIVEL DA CAIXA ESTEJA ALTO
         Serial.println("BOMBA DESLIGADA");
       }
 
