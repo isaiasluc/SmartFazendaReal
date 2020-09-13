@@ -13,6 +13,10 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 #define TABLE_NAME "Dados tanque 2 (Poco)"
 
 //Configuraçõs do WiFi
+//#define WIFI_SSID "William" //Nome da Wifi
+//#define WIFI_PASSWORD "camaleao" //Senha da Wifi
+
+//Configuraçõs do WiFi
 #define WIFI_SSID "ESTABULO COZINHA" //Nome da Wifi
 #define WIFI_PASSWORD "A1b2c3d4e5" //Senha da Wifi
 
@@ -23,6 +27,9 @@ NTPClient timeClient(ntpUDP, "a.st1.ntp.br");
 //Definindo pinos dos leds
 #define ledGreen D2
 #define ledRed D3
+
+//Definindo o pino do rele
+#define rele D6
 
 // CRIANDO OBJETO JSON PARA ENVIAR DADOS AO FIREBASE
 // -------------------------------------------
@@ -73,10 +80,6 @@ return (distance);
 }
 
 // ------------------------------
-
-const int rele = D6;
-
-// ------------------------------
 void espInit() {
   //Iniciando comunicação serial
   Serial.begin(115200);
@@ -113,6 +116,7 @@ void wifiInit() {
   Firebase.setString("system_power", "Desligado"); //Seta o estado inicial do sistema para Desligado
   Serial.println("Iniciada instância do Firebase");
   Serial.println("Setando estado inicial do sistema para Desligado");
+  
 }
 
 //----------------------------------------------------------------------------------------
@@ -130,14 +134,18 @@ int timeUpdate() {
 
 void enviaDados() {
   float pocoVol, pocoAlturaAgua;
-  int timestamp, pocoLevel, temp_bomba, pumpStatus, caixaStatus;
+  int timestamp, pocoLevel, temp_bomba, pumpStatus, caixaLevel;
   String system_power;
 
   real = distancia();
   filtrado = moving_average();
 
   //Dimensões do poco em cm
-  float R=14, r=13, h=145;
+  float R=103, r=76, h=145;
+
+  if (WiFi.status() != WL_CONNECTED) {  
+    wifiInit();
+  }
 
   //LIGANDO SISTEMA
   system_power=Firebase.getString("system_power");
@@ -167,14 +175,14 @@ void enviaDados() {
 
     //Pegando o status da caixa d'agua
 
-    caixaStatus = Firebase.getInt("caixaLevel");
+    caixaLevel = Firebase.getInt("caixaLevel");
 
     // Mandando para o firebase
-      if (caixaStatus == 0 && pocoLevel != 0) { //  || caixaStatus == ----- So liga a bomba quando o nível de água está abaixo de 10cm
+      if (caixaLevel == 0 && pocoLevel != 0) { //  || caixaLevel == ----- So liga a bomba quando o nível de água está abaixo de 10cm
         pumpStatus=1; //LIGA A BOMBA COM 1
         digitalWrite (rele,LOW); //LIGA A BOMBA CASO O NIVEL DA CAIXA ESTEJA BAIXO
         Serial.println("BOMBA LIGADA");
-      } else if (caixaStatus == 2) {
+      } else if (caixaLevel == 2) {
         pumpStatus=0; //DESLIGA A BOMBA COM 0
         digitalWrite (rele,HIGH); //DESLIGA A BOMBA CASO O NIVEL DA CAIXA ESTEJA ALTO
         Serial.println("BOMBA DESLIGADA");
@@ -195,6 +203,7 @@ void enviaDados() {
     Firebase.push(TABLE_NAME, root);
 
     if (Firebase.failed()){
+        digitalWrite (rele,HIGH);
         Serial.println("Setting Number Failed...");
         Serial.println(Firebase.error());
     }
@@ -212,5 +221,5 @@ void setup() {
 
 void loop() {
   enviaDados();
-  delay(5000);
+  delay(30000);
 }

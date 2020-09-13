@@ -37,7 +37,7 @@
       time = key['timestamp'];
       caixaLevel = key['caixaLevel'];
       system_power = key['system_power'];
-      volT1.innerText = caixaVol + "m3";
+      volT1.innerText = caixaVol + "l";
       
       if (caixaLevel == 0) {
         nivelT1.innerText = 'Low';
@@ -86,7 +86,7 @@
       system_power = key['system_power'];
       temp_bomba = key['temp_bomba'];
       pumpStatus = key['pumpStatus']
-      volT2.innerText = pocoVol + "m3";
+      volT2.innerText = pocoVol + "l";
 
       if (pocoLevel == 0) {
         nivelT2.innerText = 'Low';
@@ -132,7 +132,7 @@
         labels: timeGlobal,
         label: 'Hora',
         datasets: [{
-            label: 'Volume do tanque 1 [m3]',
+            label: 'Volume do tanque 1 [l]',
             backgroundColor: 'transparent',
             borderColor: 'rgb(255, 99, 132)',
             data: dadosGlobaisT1
@@ -155,7 +155,7 @@
         labels: timeGlobal,
         label: 'Hora',
         datasets: [{
-            label: 'Volume do tanque 2 [m3]',
+            label: 'Volume do tanque 2 [l]',
             backgroundColor: 'transparent',
             borderColor: 'rgb(255, 99, 132)',
             data: dadosGlobaisT2
