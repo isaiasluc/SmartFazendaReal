@@ -157,11 +157,11 @@ void enviaDados() {
     caixaVol = (((3.1415*(caixaAlturaAgua))*((R*R)+(R*r)+(r*r))/3)/1000);
 
     //Mandando os dados coletados para o Firebase
-      if (caixaAlturaAgua >= 30) {
+      if (caixaAlturaAgua >= 45) {
         caixaLevel = 2; //High
-      } else if (caixaAlturaAgua >= 11 && caixaAlturaAgua < 35) {
+      } else if (caixaAlturaAgua >= 20 && caixaAlturaAgua < 45) {
         caixaLevel = 1; //Ok
-      } else if (caixaAlturaAgua < 11) {
+      } else if (caixaAlturaAgua < 20) {
         caixaLevel = 0; //Low
       }
       
@@ -195,5 +195,5 @@ void setup() {
 
 void loop() {
   enviaDados();
-  delay(30000);
+  delay(15000);
 }

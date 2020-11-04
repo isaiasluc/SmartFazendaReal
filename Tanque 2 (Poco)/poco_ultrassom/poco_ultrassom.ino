@@ -221,5 +221,5 @@ void setup() {
 
 void loop() {
   enviaDados();
-  delay(30000);
+  delay(15000);
 }
