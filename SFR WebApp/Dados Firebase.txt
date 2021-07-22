@@ -1,2 +1,1 @@
-URL = https://smart-fazenda-real.firebaseio.com
-Secret Key = aQxXYLGyDzSobw2QDiw4xXB8p10UNPA8sTSKuQn1
+
